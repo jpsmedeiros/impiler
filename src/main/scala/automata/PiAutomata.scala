@@ -4,7 +4,7 @@ import types._
 
 import scala.collection.mutable.{ArrayBuffer, ArrayStack, HashMap}
 
-class PiAutomata(exp:Exp) {
+class PiAutomata(input:Statement) {
 
   var ctr_stack: ArrayStack[ImpType] = new ArrayStack()
   var value_stack: ArrayStack[Any] = new ArrayStack()
@@ -12,7 +12,7 @@ class PiAutomata(exp:Exp) {
   var mem: ArrayBuffer[Any] = new ArrayBuffer()
 
   def solve(): Unit ={
-    this.ctr_stack+=(this.exp)
+    this.ctr_stack+=(this.input)
     while (this.ctr_stack.nonEmpty) {
       val top:ImpType = this.ctr_stack.pop()
       top match {
@@ -53,6 +53,13 @@ class PiAutomata(exp:Exp) {
         case CtrlLe() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v0.asInstanceOf[Double] <= v1.asInstanceOf[Double]) }
         case CtrlGe() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v0.asInstanceOf[Double] >= v1.asInstanceOf[Double]) }
         case CtrlLoop()   => {
+          val b = this.value_stack.pop();
+          val loop = this.value_stack.pop();
+            if(b.asInstanceOf[Boolean]){
+              loop match{
+                case Loop(check,cmd) => { this.ctr_stack.push(check); this.ctr_stack.push(loop.asInstanceOf[Loop]); }
+              }
+            }
         }
         case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
       }

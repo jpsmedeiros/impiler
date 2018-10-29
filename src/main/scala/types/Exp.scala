@@ -1,7 +1,5 @@
 package types
 
-
-
 abstract class ImpType
 
 abstract class CtrlType extends ImpType
@@ -20,12 +18,13 @@ case class CtrlGt() extends CtrlType
 case class CtrlLe() extends CtrlType
 case class CtrlGe() extends CtrlType
 
-
 case class CtrlId() extends CtrlType
 case class CtrlAssign() extends CtrlType
 case class CtrlLoop() extends CtrlType
 
-abstract class Exp extends ImpType
+abstract class Statement extends ImpType
+
+abstract class Exp extends Statement
 abstract class AExp extends Exp
 case class Sum(l: AExp, r:AExp) extends AExp
 case class Sub(l: AExp, r:AExp) extends AExp
@@ -44,7 +43,7 @@ case class Gt(l: AExp, r:AExp) extends BExp
 case class Le(l: AExp, r:AExp) extends BExp
 case class Ge(l: AExp, r:AExp) extends BExp
 
-abstract class Cmd extends Exp
+abstract class Cmd extends Statement
 case class Assign(id:String ,e:Exp) extends Cmd
 case class Seq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
