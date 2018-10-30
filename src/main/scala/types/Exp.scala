@@ -1,5 +1,7 @@
 package types
 
+import javax.sql.StatementEvent
+
 abstract class ImpType
 
 abstract class CtrlType extends ImpType
@@ -21,6 +23,15 @@ case class CtrlGe() extends CtrlType
 case class CtrlId() extends CtrlType
 case class CtrlAssign() extends CtrlType
 case class CtrlLoop() extends CtrlType
+
+case class CtrlRef() extends CtrlType
+case class CtrlDeRef() extends CtrlType
+case class CtrlValRef() extends CtrlType
+
+case class CtrlBind() extends CtrlType
+case class CtrlDec() extends CtrlType
+case class CtrlBlk() extends CtrlType
+
 
 abstract class Statement extends ImpType
 
@@ -47,8 +58,16 @@ case class Gt(l: AExp, r:AExp) extends BExp
 case class Le(l: AExp, r:AExp) extends BExp
 case class Ge(l: AExp, r:AExp) extends BExp
 
+case class Ref(e: Exp) extends Exp
+case class DeRef(id:String) extends Exp
+case class ValRef(id:String) extends Exp
+
 abstract class Cmd extends Statement
 case class Assign(id:String ,e:Exp) extends Cmd
-case class Seq(r:Cmd, l:Cmd) extends Cmd
+case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
+case class Blk(dec:Dec, cmd: Cmd) extends Cmd
 
+abstract class Dec extends Statement
+case class Bind(id:String, e:Exp) extends Dec
+case class DSeq(r:Dec, l:Dec) extends Dec

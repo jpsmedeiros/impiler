@@ -2,6 +2,7 @@ package automata
 
 import types._
 
+import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ArrayStack, HashMap}
 
 class PiAutomata(input:Statement) {
@@ -10,6 +11,7 @@ class PiAutomata(input:Statement) {
   var value_stack: ArrayStack[Any] = new ArrayStack()
   var env: HashMap[String,Int] = new HashMap()
   var mem: ArrayBuffer[Any] = new ArrayBuffer()
+  var block_locks: ArrayBuffer[Int] = new ArrayBuffer()
 
   def solve(): Unit ={
     this.ctr_stack+=(this.input)
@@ -37,11 +39,18 @@ class PiAutomata(input:Statement) {
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
         case BId(v) => {this.value_stack+= this.mem(this.env(v))}
 
-        // Cmds
-        case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id; this.ctr_stack+=e}
-        case Seq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
-        case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+=check}
+        case Ref(e) => {this.ctr_stack+=CtrlRef(); this.ctr_stack+= e}
+        case DeRef(id) => {val l = this.env(id); this.value_stack+= l}
+        case ValRef(id) => {val v = this.mem(this.env(id)); this.value_stack+= v}
 
+        // Cmds
+        case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id; this.ctr_stack+= e}
+        case CSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
+        case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+= check}
+
+        //Decs
+        case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id}
+        case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}
@@ -66,6 +75,18 @@ class PiAutomata(input:Statement) {
             }
         }
         case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
+        case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = (this.mem.length - 1); this.value_stack.push(id); this.block_locks+= id}
+        case CtrlBind() => {
+          val head = this.value_stack.pop()
+          val v1 = this.value_stack.pop()
+          val v0 = this.value_stack.pop()
+
+          head match{
+            case HashMap[String,Int] => head(v0) = v1;
+            case _ => val e:mutable.HashMap[String,Int] = new HashMap(); e(v0) = v1;
+          }
+
+        }
       }
     }
   }
@@ -111,11 +132,23 @@ class PiAutomata(input:Statement) {
     println()
   }
 
+  def printBlockLocs(bl: ArrayBuffer[Int]): Unit ={
+    print("BlockLocs: ")
+    val l = bl.size
+    if(l==0) {println("Empty"); return }
+    for( i <- 0 to l-1 ){
+      print(s"${bl(i)}, ")
+    }
+    println()
+  }
+
   def printAut(): Unit ={
     printCtrlStack(this.ctr_stack)
     printValueStack(this.value_stack)
     printEnv(this.env)
     printMem(this.mem)
+    printBlockLocs(this.block_locks)
+    println()
   }
 
 }

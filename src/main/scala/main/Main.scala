@@ -8,9 +8,10 @@ object Main extends App {
   //Is Id a command or expression?
   //var c:Cmd = Seq(Assign("x", a), Id("x"))
   var d:Exp = And(Lt(Num(3),Num(5)),Ge(Num(3),Num(3)))
-  var e:Cmd = Seq(Assign("x",Num(3)),Loop(Lt(AId("x"),Num(5)),Assign("x",Sum(AId("x"),Num(1)))))
+  var e:Cmd = CSeq(Assign("x",Num(3)),Loop(Lt(AId("x"),Num(5)),Assign("x",Sum(AId("x"),Num(1)))))
+  var f:Exp = Ref(Num(2))
 
-  var aut:PiAutomata = new PiAutomata(e)
+  var aut:PiAutomata = new PiAutomata(f)
   aut.solve()
   aut.printAut()
 }
