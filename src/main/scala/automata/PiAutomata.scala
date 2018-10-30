@@ -14,6 +14,7 @@ class PiAutomata(input:Statement) {
   def solve(): Unit ={
     this.ctr_stack+=(this.input)
     while (this.ctr_stack.nonEmpty) {
+      this.printAut()
       val top:ImpType = this.ctr_stack.pop()
       top match {
         // AExp
@@ -22,6 +23,8 @@ class PiAutomata(input:Statement) {
         case Div(l, r) => {this.ctr_stack+=CtrlDiv(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Mul(l, r) => {this.ctr_stack+=CtrlMul(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Num(v) => {this.value_stack += v}
+        case AId(v) => {this.value_stack+= this.mem(this.env(v))}
+
         // BExp
         case And(l, r) => {this.ctr_stack+=CtrlAnd(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Or(l, r) => {this.ctr_stack+=CtrlOr(); this.ctr_stack+= r; this.ctr_stack+=l}
@@ -32,12 +35,13 @@ class PiAutomata(input:Statement) {
         case Gt(l, r) => {this.ctr_stack+=CtrlGt(); this.ctr_stack += l; this.ctr_stack += r;}
         case Le(l, r) => {this.ctr_stack+=CtrlLe(); this.ctr_stack += l; this.ctr_stack += r;}
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
+        case BId(v) => {this.value_stack+= this.mem(this.env(v))}
 
         // Cmds
         case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id; this.ctr_stack+=e}
         case Seq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
         case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+=check}
-        case Id(v) => {this.value_stack+= this.mem(this.env(v))}
+
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}
@@ -57,7 +61,7 @@ class PiAutomata(input:Statement) {
           val loop = this.value_stack.pop();
             if(b.asInstanceOf[Boolean]){
               loop match{
-                case Loop(check,cmd) => { this.ctr_stack.push(check); this.ctr_stack.push(loop.asInstanceOf[Loop]); }
+                case Loop(check,cmd) => { this.ctr_stack.push(loop.asInstanceOf[Loop]); this.ctr_stack.push(cmd); }
               }
             }
         }
@@ -97,10 +101,21 @@ class PiAutomata(input:Statement) {
     println()
   }
 
+  def printMem(mem: ArrayBuffer[Any]): Unit ={
+    print("Memory: ")
+    val l = mem.size
+    if(l==0) {println("Empty"); return }
+    for( i <- 0 to l-1 ){
+      print(s"${mem(i)}, ")
+    }
+    println()
+  }
+
   def printAut(): Unit ={
     printCtrlStack(this.ctr_stack)
     printValueStack(this.value_stack)
     printEnv(this.env)
+    printMem(this.mem)
   }
 
 }

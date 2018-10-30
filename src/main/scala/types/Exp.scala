@@ -25,6 +25,10 @@ case class CtrlLoop() extends CtrlType
 abstract class Statement extends ImpType
 
 abstract class Exp extends Statement
+
+case class AId(v:String) extends AExp
+case class BId(v:String) extends BExp
+
 abstract class AExp extends Exp
 case class Sum(l: AExp, r:AExp) extends AExp
 case class Sub(l: AExp, r:AExp) extends AExp
@@ -47,4 +51,4 @@ abstract class Cmd extends Statement
 case class Assign(id:String ,e:Exp) extends Cmd
 case class Seq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
-case class Id(v:String) extends Cmd
+
