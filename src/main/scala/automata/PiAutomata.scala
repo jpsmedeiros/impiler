@@ -77,15 +77,19 @@ class PiAutomata(input:Statement) {
         case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
         case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = (this.mem.length - 1); this.value_stack.push(id); this.block_locks+= id}
         case CtrlBind() => {
-          val head = this.value_stack.pop()
           val v1 = this.value_stack.pop()
           val v0 = this.value_stack.pop()
 
-          head match{
-            case HashMap[String,Int] => head(v0) = v1;
-            case _ => val e:mutable.HashMap[String,Int] = new HashMap(); e(v0) = v1;
+          if(!this.value_stack.isEmpty) {
+            val head = this.value_stack.pop()
+            head match {
+              case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+              case _ => val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+            }
           }
-
+          else{
+            val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+          }
         }
       }
     }

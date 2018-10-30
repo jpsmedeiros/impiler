@@ -2,6 +2,9 @@ package types
 
 import javax.sql.StatementEvent
 
+import scala.collection.mutable
+import scala.collection.mutable.HashMap
+
 abstract class ImpType
 
 abstract class CtrlType extends ImpType
