@@ -47,6 +47,10 @@ class PiAutomata(input:Statement) {
         case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id; this.ctr_stack+= e}
         case CSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
         case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+= check}
+        case Blk(dec, cmd) => {
+          this.ctr_stack+= CtrlBlk(); this.ctr_stack+= cmd; this.ctr_stack+= CtrlDec(); this.ctr_stack+= dec;
+          this.value_stack+= this.block_locks.clone(); this.block_locks = new ArrayBuffer()
+        }
 
         //Decs
         case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id}
@@ -74,8 +78,8 @@ class PiAutomata(input:Statement) {
               }
             }
         }
-        case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
-        case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = (this.mem.length - 1); this.value_stack.push(id); this.block_locks+= id}
+        case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem(this.env(id.asInstanceOf[String])) = v; } //this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
+        case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = this.mem.length - 1; this.value_stack.push(id); this.block_locks+= id}
         case CtrlBind() => {
           val v1 = this.value_stack.pop()
           val v0 = this.value_stack.pop()
@@ -84,12 +88,33 @@ class PiAutomata(input:Statement) {
             val head = this.value_stack.pop()
             head match {
               case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-              case _ => val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
             }
           }
           else{
             val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
           }
+        }
+        case CtrlDec() => {
+          var e1:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          this.value_stack+= this.env.clone();
+          for ((k,v) <- e1) this.env(k) = v;
+        }
+        case CtrlBlk() => {
+          var e:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          var bl:ArrayBuffer[Int] = this.value_stack.pop().asInstanceOf[ArrayBuffer[Int]]
+
+          this.env = e;
+          var aux:ArrayBuffer[Int] = this.block_locks;
+          this.block_locks = bl;
+
+          val l = aux.size
+          if(l!=0) {
+            for (i <- 0 to l - 1) {
+              this.mem(aux(i)) = null
+            }
+          }
+
         }
       }
     }
