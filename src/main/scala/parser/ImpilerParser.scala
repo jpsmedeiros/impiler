@@ -9,13 +9,12 @@ import types._
 
 object ImpilerParser {
   def parse(): Unit ={
-    val parser = new ImpilerParser(readInput())
+    val parser = new ImpilerParser("2*2+2")
     parser.InputLine.run() match {
       case Success(exprAst)       => println("Result: " + exprAst)
       case Failure(e: ParseError) => println("Expression is not valid: " + parser.formatError(e))
       case Failure(e)             => println("Unexpected error during parsing run: " + e)
     }
-    parse()
   }
 
   def readInput(): String = {
@@ -30,25 +29,29 @@ object ImpilerParser {
 class ImpilerParser(val input: ParserInput) extends Parser {
   import ImpilerParser._
 
-  def InputLine = rule { Expression ~ EOI }
+  def InputLine = rule { AExp ~ EOI }
 
-  def Expression: Rule1[Expr] = rule {
-    Term ~ zeroOrMore(
-      '+' ~ Term ~> Addition
-        | '-' ~ Term ~> Subtraction)
+  def AExp: Rule1[AExp] = rule {
+    ( Term ~ zeroOrMore(
+      '+' ~ Term ~> {(r:AExp,l:AExp) => Sum(r,l)}
+        | '-' ~ Term ~> {(r:AExp,l:AExp) => Sub(r,l)}
+    )
+      | Term)
   }
+
 
   def Term = rule {
     Factor ~ zeroOrMore(
-      '*' ~ Factor ~> Multiplication
-        | '/' ~ Factor ~> Division)
+      '*' ~ Factor ~> {(r:AExp,l:AExp) => Mul(r,l)}
+        | '/' ~ Factor ~> {(r:AExp,l:AExp) => Div(r,l)}
+    )
   }
 
   def Factor = rule { Number | Parens }
 
-  def Parens = rule { '(' ~ Expression ~ ')' }
+  def Parens = rule { '(' ~ AExp ~ ')' }
 
-  def Number = rule { capture(Digits) ~> { x => Value(x.toInt)} }
+  def Number = rule { capture(Digits) ~> { x => Num(x.toInt)} }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
 }
