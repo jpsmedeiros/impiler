@@ -6,6 +6,7 @@ import scala.io.StdIn
 import scala.util.{Failure, Success}
 
 object ImpilerParser {
+
   def parse(): Unit = {
     var parse_result = parse_input(readInput())
     if(parse_result != null){
@@ -30,38 +31,41 @@ object ImpilerParser {
   }
 }
 
-
 class ImpilerParser(val input: ParserInput) extends Parser {
 
   implicit def wspStr(s: String): Rule0 = rule {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { (AExp | BExp) ~ EOI }
+  def InputLine = rule { (Exp) ~ EOI }
+  def Exp: Rule1[types.Exp] = rule {
+    BExp | AExp
+  }
 
   def AExp: Rule1[types.AExp] = rule {
-    ( ATerm ~ zeroOrMore(
-      '+' ~ ATerm ~> types.Sum
-        | '-' ~ ATerm ~> types.Sub
-    ))
+    ATermP
   }
 
+  def ATermP = rule {
+    (ATerm ~ zeroOrMore( ('+' ~ ATerm ~>  types.Sum) | ('-' ~ ATerm ~> types.Sub)) ) | ATerm
+  }
 
   def ATerm = rule {
-    AFactor ~ zeroOrMore(
-      '*' ~ AFactor ~>  types.Mul
-        | '/' ~ AFactor ~> types.Div
-    )
+    (AFactor ~ zeroOrMore( ('*' ~ AFactor ~>  types.Mul) | ('/' ~ AFactor ~> types.Div)) ) | AFactor
   }
 
-  def BExp: Rule1[types.BExp] = rule { BExp2 | BExp1 | BFactor}
+  def BExp: Rule1[types.BExp] = rule { BExp2 | BExp1 | BExp2A | BFactor}
 
   def BExp2 = rule{
-    ( (BFactor | BExp1) ~ zeroOrMore(
+    ( (BFactor | BExp1) ~ oneOrMore(
       """/\""" ~ (BFactor | BExp1) ~> types.And
         | """\/""" ~ (BFactor | BExp1) ~> types.Or
         | '=' ~ (BFactor | BExp1) ~> types.Equals
     ))
+  }
+
+  def BExp2A = rule{
+    (AFactor ~ '>' ~ AFactor ~> types.Lt) | (AFactor ~ '<' ~ AFactor ~> types.Gt) | (AFactor ~ str(">=") ~ AFactor ~> types.Le) | (AFactor ~ str("<=") ~ AFactor ~> types.Ge)
   }
 
   def BExp1 = rule{
@@ -83,10 +87,6 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def BParens = rule { '(' ~ BExp ~ ')' }
 
-  def Bool = rule { BoolT | BoolF }
-
-  def BoolT = rule { atomic("true") ~> {() => types.Bool(true)} }
-
-  def BoolF = rule { atomic("false") ~> {() => types.Bool(false)} }
+  def Bool = rule { (atomic("true") ~> {() => types.Bool(true)}) | (atomic("false") ~> {() => types.Bool(false)} ) }
 
 }
