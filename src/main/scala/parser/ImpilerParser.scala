@@ -7,12 +7,13 @@ import scala.util.{Failure, Success}
 
 object ImpilerParser {
   def parse(): Unit ={
-    val parser = new ImpilerParser("!True&False|True")
+    val parser = new ImpilerParser(readInput())
     parser.InputLine.run() match {
       case Success(exprAst)       => println("Result: " + exprAst)
       case Failure(e: ParseError) => println("Expression is not valid: " + parser.formatError(e))
       case Failure(e)             => println("Unexpected error during parsing run: " + e)
     }
+    parse()
   }
 
   def readInput(): String = {
@@ -20,12 +21,10 @@ object ImpilerParser {
     Console.out.flush()
     return StdIn.readLine()
   }
-
 }
 
 
 class ImpilerParser(val input: ParserInput) extends Parser {
-  import ImpilerParser._
 
   implicit def wspStr(s: String): Rule0 = rule {
     str(s) ~ zeroOrMore(' ')
@@ -71,7 +70,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def WS = rule { quiet(zeroOrMore(anyOf(" \t \n"))) }
 
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+  def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
 
   def BFactor = rule { Bool | BParens }
 
