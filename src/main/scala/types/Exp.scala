@@ -49,3 +49,10 @@ case class Assign(id:String ,e:Exp) extends Cmd
 case class Seq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Id(v:String) extends Cmd
+
+abstract class Expr
+case class Value(value: Int) extends Expr
+case class Addition(lhs: Expr, rhs: Expr) extends Expr
+case class Subtraction(lhs: Expr, rhs: Expr) extends Expr
+case class Multiplication(lhs: Expr, rhs: Expr) extends Expr
+case class Division(lhs: Expr, rhs: Expr) extends Expr

@@ -1,9 +1,7 @@
 package main
 import automata.PiAutomata
+import parser.ImpilerParser
 import types._
-import parser.InputHandler
-
-import scala.io.StdIn
 
 object Main extends App {
   val a:Exp = Div(Mul(Sub(Num(2), Num(4)),Sum(Num(2), Num(5))), Num(7))
@@ -15,5 +13,5 @@ object Main extends App {
   aut.solve()
   aut.printAut()
 
-  new InputHandler().parse()
+  ImpilerParser.parse()
 }
