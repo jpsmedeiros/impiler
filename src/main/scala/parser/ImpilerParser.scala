@@ -5,11 +5,9 @@ import org.parboiled2._
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
-import types._
-
 object ImpilerParser {
   def parse(): Unit ={
-    val parser = new ImpilerParser("2*2+2")
+    val parser = new ImpilerParser("!True&False|True")
     parser.InputLine.run() match {
       case Success(exprAst)       => println("Result: " + exprAst)
       case Failure(e: ParseError) => println("Expression is not valid: " + parser.formatError(e))
@@ -29,29 +27,60 @@ object ImpilerParser {
 class ImpilerParser(val input: ParserInput) extends Parser {
   import ImpilerParser._
 
-  def InputLine = rule { AExp ~ EOI }
+  implicit def wspStr(s: String): Rule0 = rule {
+    str(s) ~ zeroOrMore(' ')
+  }
 
-  def AExp: Rule1[AExp] = rule {
-    ( Term ~ zeroOrMore(
-      '+' ~ Term ~> {(r:AExp,l:AExp) => Sum(r,l)}
-        | '-' ~ Term ~> {(r:AExp,l:AExp) => Sub(r,l)}
-    )
-      | Term)
+  def InputLine = rule { (AExp | BExp) ~ EOI }
+
+  def AExp: Rule1[types.AExp] = rule {
+    ( ATerm ~ zeroOrMore(
+      '+' ~ ATerm ~> types.Sum
+        | '-' ~ ATerm ~> types.Sub
+    ))
   }
 
 
-  def Term = rule {
-    Factor ~ zeroOrMore(
-      '*' ~ Factor ~> {(r:AExp,l:AExp) => Mul(r,l)}
-        | '/' ~ Factor ~> {(r:AExp,l:AExp) => Div(r,l)}
+  def ATerm = rule {
+    AFactor ~ zeroOrMore(
+      '*' ~ AFactor ~>  types.Mul
+        | '/' ~ AFactor ~> types.Div
     )
   }
 
-  def Factor = rule { Number | Parens }
+  def BExp: Rule1[types.BExp] = rule { BExp2 | BExp1 | BFactor}
 
-  def Parens = rule { '(' ~ AExp ~ ')' }
+  def BExp2 = rule{
+    ( (BFactor | BExp1) ~ zeroOrMore(
+      '&' ~ (BFactor | BExp1) ~> types.And
+        | '|' ~ (BFactor | BExp1) ~> types.Or
+        | '=' ~ (BFactor | BExp1) ~> types.Equals
+    ))
+  }
 
-  def Number = rule { capture(Digits) ~> { x => Num(x.toInt)} }
+  def BExp1 = rule{
+    '!' ~ BFactor ~> types.Not
+  }
+
+
+  def AFactor = rule { Number | AParens }
+
+  def AParens = rule { '(' ~ AExp ~ ')' }
+
+  def Number = rule { WS ~ capture(Digits) ~ WS ~> { x => types.Num(x.toInt)} }
+
+  def WS = rule { quiet(zeroOrMore(anyOf(" \t \n"))) }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
+
+  def BFactor = rule { Bool | BParens }
+
+  def BParens = rule { '(' ~ BExp ~ ')' }
+
+  def Bool = rule { BoolT | BoolF }
+
+  def BoolT = rule { atomic("True") ~> {() => types.Bool(true)} }
+
+  def BoolF = rule { atomic("False") ~> {() => types.Bool(false)} }
+
 }
