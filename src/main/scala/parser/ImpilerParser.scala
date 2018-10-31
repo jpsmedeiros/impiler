@@ -1,16 +1,24 @@
 package parser
 
 import org.parboiled2._
-import shapeless.HNil
 
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
 object ImpilerParser {
-  def parse(): Unit ={
-    val parser = new ImpilerParser("!((5 +4*5/6)>(3*4+18))")
+
+  def parse(): Unit = {
+    var parse_result = parse_input(readInput())
+    if(parse_result != null){
+      println("PI-LIB: " + parse_result)
+    }
+    parse()
+  }
+
+  def parse_input(input: String): Any = {
+    val parser = new ImpilerParser(input)
     parser.InputLine.run() match {
-      case Success(exprAst)       => println("Result: " + exprAst)
+      case Success(exprAst)       => return exprAst
       case Failure(e: ParseError) => println("Expression is not valid: " + parser.formatError(e))
       case Failure(e)             => println("Unexpected error during parsing run: " + e)
     }
@@ -21,11 +29,9 @@ object ImpilerParser {
     Console.out.flush()
     return StdIn.readLine()
   }
-
 }
 
 class ImpilerParser(val input: ParserInput) extends Parser {
-  import ImpilerParser._
 
   implicit def wspStr(s: String): Rule0 = rule {
     str(s) ~ zeroOrMore(' ')
@@ -52,8 +58,8 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def BExp2 = rule{
     ( (BFactor | BExp1) ~ oneOrMore(
-      '&' ~ (BFactor | BExp1) ~> types.And
-        | '|' ~ (BFactor | BExp1) ~> types.Or
+      """/\""" ~ (BFactor | BExp1) ~> types.And
+        | """\/""" ~ (BFactor | BExp1) ~> types.Or
         | '=' ~ (BFactor | BExp1) ~> types.Equals
     ))
   }
@@ -75,12 +81,12 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def WS = rule { quiet(zeroOrMore(anyOf(" \t \n"))) }
 
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+  def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
 
   def BFactor = rule { Bool | BParens }
 
   def BParens = rule { '(' ~ BExp ~ ')' }
 
-  def Bool = rule { (atomic("True") ~> {() => types.Bool(true)}) | (atomic("False") ~> {() => types.Bool(false)} ) }
+  def Bool = rule { (atomic("true") ~> {() => types.Bool(true)}) | (atomic("false") ~> {() => types.Bool(false)} ) }
 
 }
