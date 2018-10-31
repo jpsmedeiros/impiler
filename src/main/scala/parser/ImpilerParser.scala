@@ -6,14 +6,21 @@ import scala.io.StdIn
 import scala.util.{Failure, Success}
 
 object ImpilerParser {
-  def parse(): Unit ={
-    val parser = new ImpilerParser(readInput())
+  def parse(): Unit = {
+    var parse_result = parse_input(readInput())
+    if(parse_result != null){
+      println("PI-LIB: " + parse_result)
+    }
+    parse()
+  }
+
+  def parse_input(input: String): Any = {
+    val parser = new ImpilerParser(input)
     parser.InputLine.run() match {
-      case Success(exprAst)       => println("Result: " + exprAst)
+      case Success(exprAst)       => return exprAst
       case Failure(e: ParseError) => println("Expression is not valid: " + parser.formatError(e))
       case Failure(e)             => println("Unexpected error during parsing run: " + e)
     }
-    parse()
   }
 
   def readInput(): String = {
@@ -51,8 +58,8 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def BExp2 = rule{
     ( (BFactor | BExp1) ~ zeroOrMore(
-      '&' ~ (BFactor | BExp1) ~> types.And
-        | '|' ~ (BFactor | BExp1) ~> types.Or
+      """/\""" ~ (BFactor | BExp1) ~> types.And
+        | """\/""" ~ (BFactor | BExp1) ~> types.Or
         | '=' ~ (BFactor | BExp1) ~> types.Equals
     ))
   }
@@ -78,8 +85,8 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def Bool = rule { BoolT | BoolF }
 
-  def BoolT = rule { atomic("True") ~> {() => types.Bool(true)} }
+  def BoolT = rule { atomic("true") ~> {() => types.Bool(true)} }
 
-  def BoolF = rule { atomic("False") ~> {() => types.Bool(false)} }
+  def BoolF = rule { atomic("false") ~> {() => types.Bool(false)} }
 
 }
