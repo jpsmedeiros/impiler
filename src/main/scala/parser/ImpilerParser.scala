@@ -78,7 +78,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def BExp2A = rule{
-    (AFactor ~ '>' ~ AFactor ~> types.Lt) | (AFactor ~ '<' ~ AFactor ~> types.Gt) | (AFactor ~ str(">=") ~ AFactor ~> types.Le) | (AFactor ~ str("<=") ~ AFactor ~> types.Ge)
+    (AFactor ~ '>' ~ AFactor ~> types.Gt) | (AFactor ~ '<' ~ AFactor ~> types.Lt) | (AFactor ~ str(">=") ~ AFactor ~> types.Ge) | (AFactor ~ str("<=") ~ AFactor ~> types.Le)
   }
 
   def BExp1 = rule{
