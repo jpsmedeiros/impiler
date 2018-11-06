@@ -82,7 +82,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def BExp2A = rule{
-    (AFactor ~ '>' ~ AFactor ~> types.Gt) | (AFactor ~ '<' ~ AFactor ~> types.Lt) | (AFactor ~ str(">=") ~ AFactor ~> types.Ge) | (AFactor ~ str("<=") ~ AFactor ~> types.Le)
+    (AExp ~ '>' ~ AExp ~> types.Gt) | (AFactor ~ '<' ~ AFactor ~> types.Lt) | (AFactor ~ str(">=") ~ AFactor ~> types.Ge) | (AFactor ~ str("<=") ~ AFactor ~> types.Le)
   }
 
   def BExp1 = rule{
@@ -90,9 +90,9 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
 
-  def AFactor = rule { Number | AParens }
+  def AFactor = rule { AParens | Number }
 
-  def AParens = rule { '(' ~ AExp ~ ')' }
+  def AParens = rule { WS ~ '(' ~ AExp ~ ')' ~ WS }
 
   def Number = rule { WS ~ capture(Digits) ~ WS ~> { x => types.Num(x.toInt)} }
 
@@ -101,7 +101,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
 
   def Identifier = rule {
-    capture(oneOrMore(CharPredicate.AlphaNum))
+    WS ~ capture(oneOrMore(CharPredicate.AlphaNum)) ~ WS
   }
 
   def BFactor = rule { Bool | BParens }

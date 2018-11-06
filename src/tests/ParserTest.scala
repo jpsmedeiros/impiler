@@ -63,4 +63,34 @@ class ParserTest extends FunSuite {
     assert(result === expected)
   }
 
+  test("Operação de desigualdade: maior que") {
+    var result = ImpilerParser.parse_input("5 > 2")
+    var expected = Gt(Num(5), Num(2))
+    assert(result === expected)
+  }
+
+  test("Operação de desigualdade: menor que") {
+    var result = ImpilerParser.parse_input("5 < 2")
+    var expected = Lt(Num(5), Num(2))
+    assert(result === expected)
+  }
+
+  test("Operação de desigualdade: maior igual") {
+    var result = ImpilerParser.parse_input("5 >= 2")
+    var expected = Ge(Num(5), Num(2))
+    assert(result === expected)
+  }
+
+  test("Operação de desigualdade: menor igual") {
+    var result = ImpilerParser.parse_input("5 <= 2")
+    var expected = Le(Num(5), Num(2))
+    assert(result === expected)
+  }
+
+  test("Operação de desigualdade: maior que com calculos") {
+    var result = ImpilerParser.parse_input("(3*2) > 5+1")
+    var expected = Gt(Mul(Num(3), Num(2)), Sum(Num(5), Num(1)))
+    assert(result === expected)
+  }
+
 }
