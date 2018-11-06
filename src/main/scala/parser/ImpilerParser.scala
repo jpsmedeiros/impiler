@@ -37,7 +37,20 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { (Exp) ~ EOI }
+  def InputLine = rule { ((Exp) | Dec) ~ EOI }
+
+  def Statement: Rule1[types.Statement] = rule {
+    Dec// | Cmd
+  }
+
+  def Dec: Rule1[types.Dec] = rule {
+    "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
+  }
+
+  //def Cmd: Rule1[types.Cmd] = rule {
+  //  TODO
+  //}
+
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
   }
@@ -82,6 +95,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def WS = rule { quiet(zeroOrMore(anyOf(" \t \n"))) }
 
   def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
+
+  def Identifier = rule {
+    capture(oneOrMore(CharPredicate.AlphaNum))
+  }
 
   def BFactor = rule { Bool | BParens }
 

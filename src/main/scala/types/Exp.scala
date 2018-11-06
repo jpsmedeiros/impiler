@@ -72,5 +72,7 @@ case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
 
 abstract class Dec extends Statement
-case class Bind(id:String, e:Exp) extends Dec
+case class Bind(id: Id, e:Exp) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
+
+case class Id(id: String)
