@@ -47,9 +47,13 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
-  //def Cmd: Rule1[types.Cmd] = rule {
-  //  TODO
-  //}
+  def Loop: Rule1[types.Loop] = rule { "Loop" ~ BExp ~ Cmd ~> types.Loop }
+
+  def CSeq: Rule1[types.CSeq] = rule { Cmd ~ Cmd ~> types.CSeq }
+
+  def Assign: Rule1[types.Assign] = rule { "Assign" ~ Identifier ~ Exp ~> types.Assign }
+
+  def Cmd = rule { Loop | CSeq | Assign }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
