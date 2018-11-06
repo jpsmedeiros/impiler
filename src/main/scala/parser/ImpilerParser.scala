@@ -37,10 +37,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { ((Exp) | Dec) ~ EOI }
+  def InputLine = rule { (Statement) ~ EOI }
 
   def Statement: Rule1[types.Statement] = rule {
-    Dec | Cmd
+    Cmd | Exp
   }
 
   def Dec: Rule1[types.Dec] = rule {
@@ -53,11 +53,14 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def Loop: Rule1[types.Loop] = rule { "while" ~ BExp ~ "do" ~ Cmd ~> types.Loop }
 
-  def CSeq: Rule1[types.CSeq] = rule { Cmd ~ Cmd ~> types.CSeq }
+  def CSeq: Rule1[types.CSeq] = rule { CmdNR ~ ';' ~ Cmd ~> types.CSeq }
 
   def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~> types.Assign }
 
-  def Cmd = rule { Loop | CSeq | Assign }
+  def Blk: Rule1[types.Blk] = rule { Dec ~ '{' ~ Cmd ~ '}' ~> types.Blk }
+
+  def Cmd = rule { CmdNR | CSeq }
+  def CmdNR = rule { Assign | Loop | Blk }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
