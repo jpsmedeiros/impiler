@@ -13,9 +13,9 @@ object Main extends App {
   //Is Id a command or expression?
   //var c:Cmd = Seq(Assign("x", a), Id("x"))
   var d:Exp = And(Lt(Num(3),Num(5)),Ge(Num(3),Num(3)))
-  var e:Cmd = CSeq(Assign("x",Num(3)),Loop(Lt(AId("x"),Num(5)),Assign("x",Sum(AId("x"),Num(1)))))
-  var f:Dec = Bind("x",Ref(Num(2)))
-  var g:Cmd = Blk(Bind("x",Ref(Num(2))),Assign("x",Num(3)))
+  var e:Cmd = CSeq(Assign(Id("x"),Num(3)),Loop(Lt(AId("x"),Num(5)),Assign(Id("x"),Sum(AId("x"),Num(1)))))
+  var f:Dec = Bind(Id("x"),Ref(Num(2)))
+  var g:Cmd = Blk(Bind(Id("x"),Ref(Num(2))),Assign(Id("x"),Num(3)))
 
   var aut:PiAutomata = new PiAutomata(g)
   aut.solve()
