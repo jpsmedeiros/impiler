@@ -82,8 +82,8 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def BExp2 = rule{
     ( (BFactor | BExp1) ~ oneOrMore(
-      """/\""" ~ (BFactor | BExp1) ~> types.And
-        | """\/""" ~ (BFactor | BExp1) ~> types.Or
+      "&&" ~ (BFactor | BExp1) ~> types.And
+        | "||" ~ (BFactor | BExp1) ~> types.Or
         | '=' ~ (BFactor | BExp1) ~> types.Equals
     ))
   }

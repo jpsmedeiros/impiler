@@ -34,13 +34,13 @@ class ParserTest extends FunSuite {
   }
 
   test("Operação booleana: e") {
-    var result = ImpilerParser.parse_input("""true/\false""")
+    var result = ImpilerParser.parse_input("""true&&false""")
     var expected = And(Bool(true), Bool(false))
     assert(result === expected)
   }
 
   test("Operação booleana: ou") {
-    var result = ImpilerParser.parse_input("""true\/false""")
+    var result = ImpilerParser.parse_input("""true||false""")
     var expected = Or(Bool(true), Bool(false))
     assert(result === expected)
   }
@@ -58,7 +58,7 @@ class ParserTest extends FunSuite {
   }
 
   test("Operação booleana: operação com negação") {
-    var result = ImpilerParser.parse_input("""true/\!false""")
+    var result = ImpilerParser.parse_input("""true&&!false""")
     var expected = And(Bool(true), Not(Bool(false)))
     assert(result === expected)
   }
@@ -100,7 +100,7 @@ class ParserTest extends FunSuite {
   }
 
   test("Operação de Assign: x/\\false") {
-    var result = ImpilerParser.parse_input("x/\\false")
+    var result = ImpilerParser.parse_input("x&&false")
     var expected = And(Id("x"), Bool(false))
     assert(result === expected)
   }
