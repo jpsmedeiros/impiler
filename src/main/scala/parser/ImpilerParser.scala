@@ -37,10 +37,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { (Statement) ~ EOI }
+  def InputLine = rule { (Statement | Exp ) ~ EOI }
 
   def Statement: Rule1[types.Statement] = rule {
-    Cmd | Exp
+    Dec | Cmd
   }
 
   def Dec: Rule1[types.Dec] = rule {
@@ -51,16 +51,16 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
-  def Loop: Rule1[types.Loop] = rule { "while" ~ BExp ~ "do" ~ Cmd ~> types.Loop }
+  def Loop: Rule1[types.Loop] = rule { ("while" ~ WS ~ "(" ~ WS ~ BExp ~ WS ~ ")" ~ WS ~ "do " ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ WS
+    ~> {(cond: types.BExp, cmd: types.Cmd) => types.Loop(cond, cmd)}) }
 
-  def CSeq: Rule1[types.CSeq] = rule { CmdNR ~ ';' ~ Cmd ~> types.CSeq }
+  def CSeq: Rule1[types.CSeq] = rule { CmdTerm ~ WS ~ ";" ~ WS ~ Cmd ~> types.CSeq }
 
-  def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~> types.Assign }
+  def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
 
-  def Blk: Rule1[types.Blk] = rule { Dec ~ '{' ~ Cmd ~ '}' ~> types.Blk }
+  def Cmd = rule { CSeq | CmdTerm }
 
-  def Cmd = rule { CmdNR | CSeq }
-  def CmdNR = rule { Assign | Loop | Blk }
+  def CmdTerm = rule { Loop | Assign }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
@@ -89,15 +89,18 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def BExp2A = rule{
-    (AExp ~ '>' ~ AExp ~> types.Gt) | (AFactor ~ '<' ~ AFactor ~> types.Lt) | (AFactor ~ str(">=") ~ AFactor ~> types.Ge) | (AFactor ~ str("<=") ~ AFactor ~> types.Le)
+    (AExp ~ '>' ~ AExp ~> types.Gt) | (AExp ~ '<' ~ AExp ~> types.Lt) | (AExp ~ str(">=") ~ AExp ~> types.Ge) | (AExp ~ str("<=") ~ AExp ~> types.Le)
   }
 
   def BExp1 = rule{
     '!' ~ BFactor ~> types.Not
   }
 
+  def Id = rule {
+    Identifier ~> {x: String => types.Id(x) }
+  }
 
-  def AFactor = rule { AParens | Number }
+  def AFactor = rule { AParens | Number | Id }
 
   def AParens = rule { WS ~ '(' ~ AExp ~ ')' ~ WS }
 
@@ -111,7 +114,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     WS ~ capture(oneOrMore(CharPredicate.AlphaNum)) ~ WS
   }
 
-  def BFactor = rule { Bool | BParens }
+  def ArithOp = rule { WS ~ ("+" | "-" | "*" | "/") ~ WS }
+  def BoolOp = rule { WS ~ ("<" | "<=" | ">" | ">=") ~ WS }
+
+  def BFactor = rule { BParens | Bool | !(Id ~ ArithOp | Id ~ BoolOp) ~ Id}
 
   def BParens = rule { '(' ~ BExp ~ ')' }
 
