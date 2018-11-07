@@ -111,4 +111,16 @@ class ParserTest extends FunSuite {
     assert(result === expected)
   }
 
+  test("Operação de Assign: x := 3") {
+    var result = ImpilerParser.parse_input("x := 3")
+    var expected = Assign(Id("x"), Num(3))
+    assert(result === expected)
+  }
+
+  test("Operação de Assign: x/\\false") {
+    var result = ImpilerParser.parse_input("x/\\false")
+    var expected = And(Id("x"), Bool(false))
+    assert(result === expected)
+  }
+
 }

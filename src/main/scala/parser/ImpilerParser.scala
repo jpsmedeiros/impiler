@@ -44,6 +44,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def Dec: Rule1[types.Dec] = rule {
+    Var
+  }
+
+  def Var: Rule1[types.Bind] = rule {
     "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
@@ -107,7 +111,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
 
   def Identifier = rule {
-    WS ~ capture(oneOrMore(CharPredicate.AlphaNum)) ~ WS
+    WS ~ capture(CharPredicate.Alpha ~ zeroOrMore(CharPredicate.AlphaNum)) ~ WS
   }
 
   def ArithOp = rule { WS ~ ("+" | "-" | "*" | "/") ~ WS }
