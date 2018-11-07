@@ -76,7 +76,7 @@ class ParserTest extends FunSuite {
   }
 
   test("Operação booleana: operação com variáveis") {
-    var result = ImpilerParser.parse_input("""x/\!false""")
+    var result = ImpilerParser.parse_input("""x&&!false""")
     var expected = And(Id("x"), Not(Bool(false)))
     assert(result === expected)
   }
