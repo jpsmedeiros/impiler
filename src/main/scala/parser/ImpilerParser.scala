@@ -111,7 +111,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def Digits = rule { ("+" | "-").? ~ oneOrMore(CharPredicate.Digit) }
 
   def Identifier = rule {
-    WS ~ capture(oneOrMore(CharPredicate.AlphaNum)) ~ WS
+    WS ~ capture(CharPredicate.Alpha ~ zeroOrMore(CharPredicate.AlphaNum)) ~ WS
   }
 
   def ArithOp = rule { WS ~ ("+" | "-" | "*" | "/") ~ WS }
