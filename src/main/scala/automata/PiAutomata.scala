@@ -25,7 +25,7 @@ class PiAutomata(input:Statement) {
         case Div(l, r) => {this.ctr_stack+=CtrlDiv(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Mul(l, r) => {this.ctr_stack+=CtrlMul(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Num(v) => {this.value_stack += v}
-        case AId(v) => {this.value_stack+= this.mem(this.env(v))}
+        //case AId(v) => {this.value_stack+= this.mem(this.env(v))}
 
         // BExp
         case And(l, r) => {this.ctr_stack+=CtrlAnd(); this.ctr_stack+= r; this.ctr_stack+=l}
@@ -37,7 +37,7 @@ class PiAutomata(input:Statement) {
         case Gt(l, r) => {this.ctr_stack+=CtrlGt(); this.ctr_stack += l; this.ctr_stack += r;}
         case Le(l, r) => {this.ctr_stack+=CtrlLe(); this.ctr_stack += l; this.ctr_stack += r;}
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
-        case BId(v) => {this.value_stack+= this.mem(this.env(v))}
+        //case BId(v) => {this.value_stack+= this.mem(this.env(v))}
 
         case Id(v) => {this.value_stack+= this.mem(this.env(v))}
 
