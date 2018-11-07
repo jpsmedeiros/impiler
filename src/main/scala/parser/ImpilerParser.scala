@@ -37,7 +37,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { ((Exp) | Statement) ~ EOI }
+  def InputLine = rule { (Statement | Exp ) ~ EOI }
 
   def Statement: Rule1[types.Statement] = rule {
     Dec | Cmd
@@ -92,11 +92,11 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     '!' ~ BFactor ~> types.Not
   }
 
-  def Id: Rule1[types.Exp] = rule {
+  def Id = rule {
     Identifier ~> {x: String => types.Id(x) }
   }
 
-  def AFactor = rule { AParens | Number }
+  def AFactor = rule { AParens | Number | Id }
 
   def AParens = rule { WS ~ '(' ~ AExp ~ ')' ~ WS }
 
@@ -110,7 +110,10 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     WS ~ capture(oneOrMore(CharPredicate.AlphaNum)) ~ WS
   }
 
-  def BFactor = rule { Bool | BParens }
+  def ArithOp = rule { WS ~ ("+" | "-" | "*" | "/") ~ WS }
+  def BoolOp = rule { WS ~ ("<" | "<=" | ">" | ">=") ~ WS }
+
+  def BFactor = rule { BParens | Bool | !(Id ~ ArithOp | Id ~ BoolOp) ~ Id}
 
   def BParens = rule { '(' ~ BExp ~ ')' }
 
