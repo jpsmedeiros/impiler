@@ -37,23 +37,26 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     str(s) ~ zeroOrMore(' ')
   }
 
-  def InputLine = rule { ((Exp) | Dec) ~ EOI }
+  def InputLine = rule { ((Exp) | Statement) ~ EOI }
 
   def Statement: Rule1[types.Statement] = rule {
-    Dec// | Cmd
+    Dec | Cmd
   }
 
   def Dec: Rule1[types.Dec] = rule {
     "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
-  def Loop: Rule1[types.Loop] = rule { "Loop" ~ BExp ~ Cmd ~> types.Loop }
+  def Loop: Rule1[types.Loop] = rule { ("while" ~ WS ~ "(" ~ WS ~ BExp ~ WS ~ ")" ~ WS ~ "do " ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ WS
+    ~> {(cond: types.BExp, cmd: types.Cmd) => types.Loop(cond, cmd)}) }
 
-  def CSeq: Rule1[types.CSeq] = rule { Cmd ~ Cmd ~> types.CSeq }
+  def CSeq: Rule1[types.CSeq] = rule { CmdTerm ~ WS ~ ";" ~ WS ~ Cmd ~> types.CSeq }
 
-  def Assign: Rule1[types.Assign] = rule { "Assign" ~ Identifier ~ Exp ~> types.Assign }
+  def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
 
-  def Cmd = rule { Loop | CSeq | Assign }
+  def Cmd = rule { CSeq | CmdTerm }
+
+  def CmdTerm = rule { Loop | Assign }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
@@ -82,13 +85,16 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def BExp2A = rule{
-    (AExp ~ '>' ~ AExp ~> types.Gt) | (AFactor ~ '<' ~ AFactor ~> types.Lt) | (AFactor ~ str(">=") ~ AFactor ~> types.Ge) | (AFactor ~ str("<=") ~ AFactor ~> types.Le)
+    (AExp ~ '>' ~ AExp ~> types.Gt) | (AExp ~ '<' ~ AExp ~> types.Lt) | (AExp ~ str(">=") ~ AExp ~> types.Ge) | (AExp ~ str("<=") ~ AExp ~> types.Le)
   }
 
   def BExp1 = rule{
     '!' ~ BFactor ~> types.Not
   }
 
+  def Id: Rule1[types.Exp] = rule {
+    Identifier ~> {x: String => types.Id(x) }
+  }
 
   def AFactor = rule { AParens | Number }
 

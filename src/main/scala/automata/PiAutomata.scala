@@ -39,12 +39,14 @@ class PiAutomata(input:Statement) {
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
         case BId(v) => {this.value_stack+= this.mem(this.env(v))}
 
+        case Id(v) => {this.value_stack+= this.mem(this.env(v))}
+
         case Ref(e) => {this.ctr_stack+=CtrlRef(); this.ctr_stack+= e}
-        case DeRef(id) => {val l = this.env(id); this.value_stack+= l}
-        case ValRef(id) => {val v = this.mem(this.env(id)); this.value_stack+= v}
+        case DeRef(id) => {val l = this.env(id.v); this.value_stack+= l}
+        case ValRef(id) => {val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]); this.value_stack+= v}
 
         // Cmds
-        case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id; this.ctr_stack+= e}
+        case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id.v; this.ctr_stack+= e}
         case CSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
         case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+= check}
         case Blk(dec, cmd) => {
@@ -53,7 +55,7 @@ class PiAutomata(input:Statement) {
         }
 
         //Decs
-        case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id}
+        case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id.v}
         case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
 
         // Controles
