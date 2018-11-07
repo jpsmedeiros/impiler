@@ -33,6 +33,18 @@ class ParserTest extends FunSuite {
     assert(result === expected)
   }
 
+  test("Operação aritmética: operação com variáveis") {
+    var result = ImpilerParser.parse_input("x*5")
+    var expected = Mul(Id("x"), Num(5))
+    assert(result === expected)
+  }
+
+  test("Operação aritmética: operação com variáveis 2") {
+    var result = ImpilerParser.parse_input("(x*y)+(5*z)/20")
+    var expected = Sum(Mul(Id("x"),Id("y")),Div(Mul(Num(5.0),Id("z")),Num(20.0)))
+    assert(result === expected)
+  }
+
   test("Operação booleana: e") {
     var result = ImpilerParser.parse_input("""true/\false""")
     var expected = And(Bool(true), Bool(false))
@@ -60,6 +72,12 @@ class ParserTest extends FunSuite {
   test("Operação booleana: operação com negação") {
     var result = ImpilerParser.parse_input("""true/\!false""")
     var expected = And(Bool(true), Not(Bool(false)))
+    assert(result === expected)
+  }
+
+  test("Operação booleana: operação com variáveis") {
+    var result = ImpilerParser.parse_input("""x/\!false""")
+    var expected = And(Id("x"), Not(Bool(false)))
     assert(result === expected)
   }
 
