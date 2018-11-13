@@ -43,7 +43,16 @@ class PiAutomata(input:Statement) {
 
         case Ref(e) => {this.ctr_stack+=CtrlRef(); this.ctr_stack+= e}
         case DeRef(id) => {val l = this.env(id.v); this.value_stack+= l}
-        case ValRef(id) => {val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]); this.value_stack+= v}
+        case ValRef(id) => {
+          //val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]);
+          val key = this.mem(this.env(id.v)).asInstanceOf[Int]
+          if(!this.mem.contains(key)){
+            printf("Dangling pointer exception in %s",id.v)
+            System.exit(1)
+          }
+          val v = this.mem(key)
+          this.value_stack+= v
+        }
 
         // Cmds
         case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id.v; this.ctr_stack+= e}
@@ -114,7 +123,8 @@ class PiAutomata(input:Statement) {
           val l = aux.size
           if(l!=0) {
             for (i <- 0 to l - 1) {
-              this.mem(aux(i)) = null
+              //this.mem(aux(i)) = null
+              this.mem -= aux(i)
             }
           }
         }
