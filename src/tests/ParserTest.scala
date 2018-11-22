@@ -129,4 +129,10 @@ class ParserTest extends FunSuite {
     assert(result === expected)
   }
 
+  test ("Fatorial"){
+    var result = ImpilerParser.parse_input("let var z := 1 in let var y := 10 in while !(y < 1) do z := z * y; y := y - 1;")
+    var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(Bind(Id("y"),Ref(Num(10.0))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))
+    assert(result === expected)
+  }
+
 }
