@@ -10,8 +10,10 @@ class PiAutomata(input:Statement) {
   var ctr_stack: ArrayStack[ImpType] = new ArrayStack()
   var value_stack: ArrayStack[Any] = new ArrayStack()
   var env: HashMap[String,Int] = new HashMap()
-  var mem: ArrayBuffer[Any] = new ArrayBuffer()
+  //var mem: ArrayBuffer[Any] = new ArrayBuffer()
+  var mem: HashMap[Int, Any] = new HashMap()
   var block_locks: ArrayBuffer[Int] = new ArrayBuffer()
+  var next_index: Int = 0
 
   def solve(): Unit ={
     this.ctr_stack+=(this.input)
@@ -25,7 +27,6 @@ class PiAutomata(input:Statement) {
         case Div(l, r) => {this.ctr_stack+=CtrlDiv(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Mul(l, r) => {this.ctr_stack+=CtrlMul(); this.ctr_stack+= r; this.ctr_stack+=l}
         case Num(v) => {this.value_stack += v}
-        //case AId(v) => {this.value_stack+= this.mem(this.env(v))}
 
         // BExp
         case And(l, r) => {this.ctr_stack+=CtrlAnd(); this.ctr_stack+= r; this.ctr_stack+=l}
@@ -37,13 +38,21 @@ class PiAutomata(input:Statement) {
         case Gt(l, r) => {this.ctr_stack+=CtrlGt(); this.ctr_stack += l; this.ctr_stack += r;}
         case Le(l, r) => {this.ctr_stack+=CtrlLe(); this.ctr_stack += l; this.ctr_stack += r;}
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
-        //case BId(v) => {this.value_stack+= this.mem(this.env(v))}
 
         case Id(v) => {this.value_stack+= this.mem(this.env(v))}
 
         case Ref(e) => {this.ctr_stack+=CtrlRef(); this.ctr_stack+= e}
         case DeRef(id) => {val l = this.env(id.v); this.value_stack+= l}
-        case ValRef(id) => {val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]); this.value_stack+= v}
+        case ValRef(id) => {
+          //val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]);
+          val key = this.mem(this.env(id.v)).asInstanceOf[Int]
+          if(!this.mem.contains(key)){
+            printf("Dangling pointer exception in %s",id.v)
+            System.exit(1)
+          }
+          val v = this.mem(key)
+          this.value_stack+= v
+        }
 
         // Cmds
         case Assign(id ,e) => {this.ctr_stack+=CtrlAssign(); this.value_stack+= id.v; this.ctr_stack+= e}
@@ -81,7 +90,8 @@ class PiAutomata(input:Statement) {
           }
         }
         case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem(this.env(id.asInstanceOf[String])) = v; } //this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
-        case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = this.mem.length - 1; this.value_stack.push(id); this.block_locks+= id}
+        //case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = this.mem.length - 1; this.value_stack.push(id); this.block_locks+= id}
+        case CtrlRef() => { val v = this.value_stack.pop(); val id = this.next_index; this.next_index+= 1; this.mem(id) = v; this.value_stack.push(id); this.block_locks+= id;}
         case CtrlBind() => {
           val v1 = this.value_stack.pop()
           val v0 = this.value_stack.pop()
@@ -113,10 +123,10 @@ class PiAutomata(input:Statement) {
           val l = aux.size
           if(l!=0) {
             for (i <- 0 to l - 1) {
-              this.mem(aux(i)) = null
+              //this.mem(aux(i)) = null
+              this.mem -= aux(i)
             }
           }
-
         }
       }
     }
@@ -153,6 +163,14 @@ class PiAutomata(input:Statement) {
     println()
   }
 
+  def printMem(mem: HashMap[Int, Any]): Unit ={
+    print("Memory: ")
+    if (mem.isEmpty) {println("Empty"); return}
+    for ((k,v) <- mem) printf("{%s, %s} ", k, v)
+    println()
+  }
+
+  /*
   def printMem(mem: ArrayBuffer[Any]): Unit ={
     print("Memory: ")
     val l = mem.size
@@ -162,6 +180,7 @@ class PiAutomata(input:Statement) {
     }
     println()
   }
+  */
 
   def printBlockLocs(bl: ArrayBuffer[Int]): Unit ={
     print("BlockLocs: ")
