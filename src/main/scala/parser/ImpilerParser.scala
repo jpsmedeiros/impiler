@@ -26,9 +26,34 @@ object ImpilerParser {
   }
 
   def readInput(): String = {
+    print("-----------\nLer arquivo? (s/n)\n ")
+    Console.out.flush()
+    var resposta = StdIn.readLine()
+    if(resposta.equals("s") || resposta.equals("S")){
+      print("-----------\nDigite o nome do arquivo:\n ")
+      var nomeArquivo = StdIn.readLine()
+      return readFileInput(nomeArquivo)
+    }else{
+      return readTextInput()
+    }
+  }
+
+  def readFileInput(nomeArquivo: String): String = {
+    val arquivo = scala.io.Source.fromFile(nomeArquivo)
+    val info = try arquivo.mkString finally arquivo.close()
+    return limpaInput(info)
+  }
+
+  def readTextInput(): String = {
     print("-----------\nDigite o código desejado:\n ")
     Console.out.flush()
     return StdIn.readLine()
+  }
+
+  def limpaInput(input: String): String = {
+    println("INPUT:\n")
+    println(input + "\n")
+    return input.replaceAll("(\r\n)|\r|\n", "")
   }
 }
 
