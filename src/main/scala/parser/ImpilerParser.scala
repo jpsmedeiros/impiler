@@ -57,13 +57,23 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def CSeq: Rule1[types.CSeq] = rule { CmdTerm ~ WS ~ Cmd ~> types.CSeq }
 
-  def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~ ";" ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
+  def Assign = rule { normalAssign | ValRefAssign | DeRefAssign}
+
+  def normalAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~ ";" ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
+
+  def ValRefAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ ValRefSymbol ~ Identifier ~ ";" ~> {(x: String, y: String) => types.Assign(types.Id(x), types.ValRef(types.Id(y)))} }
+
+  def DeRefAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ DeRefSymbol ~ Identifier ~ ";" ~> {(x: String, y: String) => types.Assign(types.Id(x), types.DeRef(types.Id(y)))} }
+
+  def ValRefSymbol = rule { '*' }
+
+  def DeRefSymbol = rule { WS ~ '&' ~ WS }
 
   def Blk: Rule1[types.Blk] = rule { Dec ~ WS ~ "in" ~ WS ~ Cmd ~> types.Blk }
 
   def Cmd = rule { CSeq | CmdTerm }
 
-  def CmdTerm = rule { Loop | Blk | Assign }
+  def CmdTerm = rule { Loop | Blk | Assign | ValRefAssign | DeRefAssign }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp

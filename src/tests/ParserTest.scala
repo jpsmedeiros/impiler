@@ -129,4 +129,16 @@ class ParserTest extends FunSuite {
     assert(result === expected)
   }
 
+  test("Comando Assign: ValRef") {
+    var result = ImpilerParser.parse_input("x := * y;")
+    var expected = Assign(Id("x"), ValRef(Id("y")))
+    assert(result === expected)
+  }
+
+  test("Comando Assign: DeRef") {
+    var result = ImpilerParser.parse_input("x := & y;")
+    var expected = Assign(Id("x"), DeRef(Id("y")))
+    assert(result === expected)
+  }
+
 }
