@@ -8,6 +8,15 @@ import scala.io.StdIn
 
 
 object Main extends App {
+
+  /*
+  var dangp:Cmd = Blk(DSeq(Bind(Id("x"),Ref(Num(100))),Bind(Id("val"),Ref(Num(0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(true))),Assign(Id("x"),DeRef(Id("y")))),Assign(Id("val"),ValRef(Id("x")))))
+  var aut:PiAutomata = new PiAutomata(dangp)
+  aut.solve()
+  aut.printAut()
+  */
+
+
   var loop = true
   while(loop) {
     var parse_result = parse_input(readInput())

@@ -1,9 +1,7 @@
 package types
 
-import javax.sql.StatementEvent
+import scala.collection.mutable.{ArrayBuffer,HashMap}
 
-import scala.collection.mutable
-import scala.collection.mutable.HashMap
 
 trait ImpType
 
@@ -38,7 +36,8 @@ case class CtrlBlk() extends CtrlType
 
 trait Statement extends ImpType
 
-trait Exp extends Statement
+trait Bindable extends ImpType
+trait Exp extends Statement with Bindable
 
 //case class AId(v:String) extends AExp
 //case class BId(v:String) extends BExp
@@ -72,7 +71,15 @@ case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
+case class Call(id: Id, actuals: Actuals) extends Cmd
 
 trait Dec extends Statement
-case class Bind(id: Id, e:Exp) extends Dec
+//case class Bind(id: Id, e:Exp) extends Dec
+case class Bind(id: Id, e: Bindable) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
+
+case class Abs(blk: Blk) extends Bindable
+case class Formals(id_list: ArrayBuffer[Id])
+case class Actuals(exp_list: ArrayBuffer[Exp])
+
+case class Closure(f: Formals, b: Blk, e: HashMap[String,Int])
