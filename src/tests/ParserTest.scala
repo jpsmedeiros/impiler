@@ -112,37 +112,37 @@ class ParserTest extends FunSuite {
   }
 
   test("Comando Assign: atribuição de número") {
-    var result = ImpilerParser.parse_input("x := 3;")
+    var result = ImpilerParser.parse_input("x := 3")
     var expected = Assign(Id("x"), Num(3))
     assert(result === expected)
   }
 
   test("Comando Assign: atribuição de operação com booleano") {
-    var result = ImpilerParser.parse_input("x := x&&true;")
+    var result = ImpilerParser.parse_input("x := x&&true")
     var expected = Assign(Id("x"), And(Id("x"), Bool(true)))
     assert(result === expected)
   }
 
   test("Comando Assign: operação entre variáveis") {
-    var result = ImpilerParser.parse_input("x := x * y;")
+    var result = ImpilerParser.parse_input("x := x * y")
     var expected = Assign(Id("x"), Mul(Id("x"), Id("y")))
     assert(result === expected)
   }
 
   test("Comando Assign: ValRef") {
-    var result = ImpilerParser.parse_input("x := * y;")
+    var result = ImpilerParser.parse_input("x := * y")
     var expected = Assign(Id("x"), ValRef(Id("y")))
     assert(result === expected)
   }
 
   test("Comando Assign: DeRef") {
-    var result = ImpilerParser.parse_input("x := & y;")
+    var result = ImpilerParser.parse_input("x := & y")
     var expected = Assign(Id("x"), DeRef(Id("y")))
     assert(result === expected)
   }
 
   test ("Programa: Fatorial"){
-    var result = ImpilerParser.parse_input("let var z := 1 in let var y := 10 in while !(y < 1) do z := z * y; y := y - 1;")
+    var result = ImpilerParser.parse_input("let var z := 1 in { let var y := 10 in { while !(y < 1) do { z := z * y y := y - 1 }}}")
     var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(Bind(Id("y"),Ref(Num(10.0))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))
     assert(result === expected)
   }
@@ -150,6 +150,24 @@ class ParserTest extends FunSuite {
   test ("Leitura de Arquivo: Fatorial"){
     var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/fatorial.txt"))
     var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(Bind(Id("y"),Ref(Num(10.0))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))
+    assert(result === expected)
+  }
+
+  test("Sequencial: Assign") {
+    var result = ImpilerParser.parse_input("z := 1 x := 5")
+    var expected = CSeq(Assign(Id("z"), Num(1.0)), Assign(Id("x"), Num(5.0)))
+    assert(result === expected)
+  }
+
+  test("Sequencial: Bind"){
+    var result = ImpilerParser.parse_input("let var z := 1 let var x := 5 let var w := 3 in { x := 2 }")
+    var expected = Blk(DSeq(Bind(Id("z"),Ref(Num(1.0))),DSeq(Bind(Id("x"),Ref(Num(5.0))),Bind(Id("w"),Ref(Num(3.0))))),Assign(Id("x"),Num(2.0)))
+    assert(result === expected)
+  }
+
+  test ("Leitura de Arquivo: Dangling pointer"){
+    var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/dpoint.txt"))
+    var expected = Blk(DSeq(Bind(Id("x"),Ref(Num(0.0))),Bind(Id("val"),Ref(Num(0.0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(false))),CSeq(Assign(Id("y"),Bool(true)),Assign(Id("x"),DeRef(Id("y"))))),Assign(Id("val"),ValRef(Id("x")))))
     assert(result === expected)
   }
 

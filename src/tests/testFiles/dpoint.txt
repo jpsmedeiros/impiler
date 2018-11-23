@@ -1,0 +1,10 @@
+let var x := 0
+let var val := 0
+    in {
+        let var y := false
+        in {
+            y := true
+            x := & y
+        }
+    val := * x
+    }

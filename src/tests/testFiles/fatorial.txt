@@ -1,7 +1,10 @@
 let var z := 1
-    in
+    in {
     let var y := 10
-        in
-        while !(y < 1) do
-        z := z * y;
-        y := y - 1;
+        in {
+            while !(y < 1) do {
+                z := z * y
+                y := y - 1
+            }
+        }
+    }
