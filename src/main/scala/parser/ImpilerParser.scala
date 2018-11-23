@@ -26,9 +26,41 @@ object ImpilerParser {
   }
 
   def readInput(): String = {
+    print("-----------\nLer arquivo? (s/n)\n ")
+    Console.out.flush()
+    var resposta = StdIn.readLine()
+    if(resposta.equals("s") || resposta.equals("S")){
+      print("-----------\nDigite o nome do arquivo:\n ")
+      var nomeArquivo = StdIn.readLine()
+      return readFileInput(nomeArquivo)
+    }else{
+      return readTextInput()
+    }
+  }
+
+  def readFileInput(nomeArquivo: String): String = {
+    try {
+      val arquivo = scala.io.Source.fromFile(nomeArquivo)
+      val info = try arquivo.mkString finally arquivo.close()
+      return limpaInput(info)
+    } catch {
+      case _: Throwable => {
+        println("Algo deu errado, verifique o nome do seu arquivo!")
+        return readInput()
+      }
+    }
+  }
+
+  def readTextInput(): String = {
     print("-----------\nDigite o código desejado:\n ")
     Console.out.flush()
     return StdIn.readLine()
+  }
+
+  def limpaInput(input: String): String = {
+    //println("INPUT:\n")
+    //println(input + "\n")
+    return input.replaceAll("(\r\n)|\r|\n", "")
   }
 }
 
@@ -44,26 +76,44 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     Cmd
   }
 
-  def Dec: Rule1[types.Dec] = rule {
-    Var
+
+
+  def DecTerm = rule {
+    Declaration
   }
 
-  def Var: Rule1[types.Bind] = rule {
+  def Declaration: Rule1[types.Dec] = rule {
     "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
-  def Loop: Rule1[types.Loop] = rule { ("while" ~ WS ~ BExp ~ WS  ~ "do " ~ WS ~ Cmd
+  def DSeq: Rule1[types.DSeq] = rule {
+    DecTerm ~ WS ~ Dec ~> types.DSeq
+  }
+
+  def Dec = rule { DSeq | DecTerm }
+
+  def Loop: Rule1[types.Loop] = rule { ("while" ~ WS ~ BExp ~ WS  ~ "do" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}"
     ~> {(cond: types.BExp, cmd: types.Cmd) => types.Loop(cond, cmd)}) }
 
   def CSeq: Rule1[types.CSeq] = rule { CmdTerm ~ WS ~ Cmd ~> types.CSeq }
 
-  def Assign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~ ";" ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
+  def Assign = rule { normalAssign | ValRefAssign | DeRefAssign}
 
-  def Blk: Rule1[types.Blk] = rule { Dec ~ WS ~ "in" ~ WS ~ Cmd ~> types.Blk }
+  def normalAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ Exp ~> {(x: String, y: types.Exp) => types.Assign(types.Id(x), y)} }
+
+  def ValRefAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ ValRefSymbol ~ Identifier ~> {(x: String, y: String) => types.Assign(types.Id(x), types.ValRef(types.Id(y)))} }
+
+  def DeRefAssign: Rule1[types.Assign] = rule { Identifier ~ ":=" ~ DeRefSymbol ~ Identifier ~> {(x: String, y: String) => types.Assign(types.Id(x), types.DeRef(types.Id(y)))} }
+
+  def ValRefSymbol = rule { WS ~ '*' ~ WS }
+
+  def DeRefSymbol = rule { WS ~ '&' ~ WS }
+
+  def Blk: Rule1[types.Blk] = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
 
   def Cmd = rule { CSeq | CmdTerm }
 
-  def CmdTerm = rule { Loop | Blk | Assign }
+  def CmdTerm = rule { Loop | Blk | Assign | ValRefAssign | DeRefAssign }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp
