@@ -160,7 +160,7 @@ class ParserTest extends FunSuite {
   }
 
   test("Sequencial: Bind"){
-    var result = ImpilerParser.parse_input("let var z := 1 let var x := 5 let var w := 3 in { x := 2 }")
+    var result = ImpilerParser.parse_input("let var z := 1 var x := 5 var w := 3 in { x := 2 }")
     var expected = Blk(DSeq(Bind(Id("z"),Ref(Num(1.0))),DSeq(Bind(Id("x"),Ref(Num(5.0))),Bind(Id("w"),Ref(Num(3.0))))),Assign(Id("x"),Num(2.0)))
     assert(result === expected)
   }
