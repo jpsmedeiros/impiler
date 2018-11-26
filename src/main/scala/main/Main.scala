@@ -14,27 +14,16 @@ object Main extends App {
   aut.solve()
   aut.printAut()
   */
-
-  var loop = true
-  while(loop) {
-    var parse_result = parse_input(readInput())
+  if(args.length > 0) {
+    println("File: " + args(0))
+    var parse_result = parse_input(readInput(args(0)))
     if(parse_result != null){
       println("PI-LIB: " + parse_result)
       var aut:PiAutomata = new PiAutomata(parse_result)
       aut.solve()
       aut.printAut()
-      loop = exitInput()
     }
-  }
-
-  def exitInput(): Boolean = {
-    print("-----------\nDeseja sair? (s/n)\n ")
-    Console.out.flush()
-    var resposta = StdIn.readLine()
-    if(resposta.equals("s") || resposta.equals("S")){
-      return false
-    }else{
-      return true
-    }
+  } else {
+    println("O programa precisa de pelo menos 1 argumento para executar")
   }
 }

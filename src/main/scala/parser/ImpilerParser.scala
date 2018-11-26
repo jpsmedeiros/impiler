@@ -7,15 +7,9 @@ import scala.util.{Failure, Success}
 
 object ImpilerParser {
 
-  def parse(): Unit = {
-    var parse_result = parse_input(readInput())
-    if(parse_result != null){
-      println("PI-LIB: " + parse_result)
-    }
-    parse()
-  }
-
   def parse_input(input: String): types.Statement = {
+    if (input == null)
+      return null
     val parser = new ImpilerParser(input)
     parser.InputLine.run() match {
       case Success(exprAst)       => return exprAst
@@ -25,17 +19,8 @@ object ImpilerParser {
     return null
   }
 
-  def readInput(): String = {
-    print("-----------\nLer arquivo? (s/n)\n ")
-    Console.out.flush()
-    var resposta = StdIn.readLine()
-    if(resposta.equals("s") || resposta.equals("S")){
-      print("-----------\nDigite o nome do arquivo:\n ")
-      var nomeArquivo = StdIn.readLine()
-      return readFileInput(nomeArquivo)
-    }else{
-      return readTextInput()
-    }
+  def readInput(nomeArquivo: String): String = {
+    return readFileInput(nomeArquivo)
   }
 
   def readFileInput(nomeArquivo: String): String = {
@@ -46,7 +31,7 @@ object ImpilerParser {
     } catch {
       case _: Throwable => {
         println("Algo deu errado, verifique o nome do seu arquivo!")
-        return readInput()
+        return null
       }
     }
   }
