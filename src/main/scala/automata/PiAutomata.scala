@@ -9,8 +9,8 @@ class PiAutomata(input:Statement) {
 
   var ctr_stack: ArrayStack[ImpType] = new ArrayStack()
   var value_stack: ArrayStack[Any] = new ArrayStack()
-  var env: HashMap[String,Int] = new HashMap()
-  //var mem: ArrayBuffer[Any] = new ArrayBuffer()
+  //var env: HashMap[String,Int] = new HashMap()
+  var env: HashMap[String,Bindable] = new HashMap()
   var mem: HashMap[Int, Any] = new HashMap()
   var block_locks: ArrayBuffer[Int] = new ArrayBuffer()
   var next_index: Int = 0
@@ -39,12 +39,43 @@ class PiAutomata(input:Statement) {
         case Le(l, r) => {this.ctr_stack+=CtrlLe(); this.ctr_stack += l; this.ctr_stack += r;}
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
 
-        case Id(v) => {this.value_stack+= this.mem(this.env(v))}
+        case Id(v) => {
+          var aux: Bindable = this.env(v)
+          aux match{
+            case Location(l) => this.value_stack+= this.mem(l)
+            case _ => this.value_stack+= aux
+          }
+
+          //this.value_stack+= this.mem(this.env(v))
+        }
 
         case Ref(e) => {this.ctr_stack+=CtrlRef(); this.ctr_stack+= e}
-        case DeRef(id) => {val l = this.env(id.v); this.value_stack+= l}
+        case DeRef(id) => {
+          val l = this.env(id.v)
+          l match{
+            case Location(l) => this.value_stack+= l
+            case _  => { printf("Error: DeRef to a constant"); System.exit(1) }
+          }
+          //this.value_stack+= l
+        }
+
         case ValRef(id) => {
           //val v = this.mem(this.mem(this.env(id.v)).asInstanceOf[Int]);
+          val aux = this.env(id.v)
+          aux match{
+            case Location(l) => {
+              val key = this.mem(l).asInstanceOf[Int] // change to location
+              if(!this.mem.contains(key)){
+                printf("Dangling pointer exception in %s",id.v)
+                System.exit(1)
+              }
+              val v = this.mem(key)
+              this.value_stack+= v
+            }
+            case _  => { printf("Error: ValRef to a constant"); System.exit(1) }
+          }
+
+          /*
           val key = this.mem(this.env(id.v)).asInstanceOf[Int]
           if(!this.mem.contains(key)){
             printf("Dangling pointer exception in %s",id.v)
@@ -52,6 +83,7 @@ class PiAutomata(input:Statement) {
           }
           val v = this.mem(key)
           this.value_stack+= v
+          */
         }
 
         // Cmds
@@ -89,9 +121,29 @@ class PiAutomata(input:Statement) {
             }
           }
         }
-        case CtrlAssign() => { val v = value_stack.pop(); val id = value_stack.pop(); this.mem(this.env(id.asInstanceOf[String])) = v; } //this.mem += v; this.env(id.asInstanceOf[String]) = this.mem.length - 1}
+        case CtrlAssign() => {
+          val v = value_stack.pop();
+          val id = value_stack.pop();
+
+          val aux = this.env(id.asInstanceOf[String])
+          aux match{
+            case Location(l) => this.mem(l) = v
+            case _  => { printf("Error: Assign to a constant"); System.exit(1) }
+          }
+          //this.mem(this.env(id.asInstanceOf[String])) = v;
+        }
+
         //case CtrlRef() => { val v = this.value_stack.pop(); this.mem+= v; val id = this.mem.length - 1; this.value_stack.push(id); this.block_locks+= id}
-        case CtrlRef() => { val v = this.value_stack.pop(); val id = this.next_index; this.next_index+= 1; this.mem(id) = v; this.value_stack.push(id); this.block_locks+= id;}
+        case CtrlRef() => {
+          //val v = this.value_stack.pop(); val id = this.next_index; this.next_index+= 1; this.mem(id) = v; this.value_stack.push(id); this.block_locks+= id;
+          val v = this.value_stack.pop()
+          val id = this.next_index
+          this.next_index+= 1
+          this.mem(id) = v
+          var l: Location = Location(id)
+          this.value_stack.push(l)
+          this.block_locks+= id
+        }
         case CtrlBind() => {
           val v1 = this.value_stack.pop()
           val v0 = this.value_stack.pop()
@@ -99,21 +151,26 @@ class PiAutomata(input:Statement) {
           if(!this.value_stack.isEmpty) {
             val head = this.value_stack.pop()
             head match {
-              case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+              //case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+              case t: HashMap[String, Bindable] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
+              //case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Bindable] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
             }
           }
           else{
-            val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+            //val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
+            val t: mutable.HashMap[String, Bindable] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
           }
         }
         case CtrlDec() => {
-          var e1:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          //var e1:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          var e1:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
           this.value_stack+= this.env.clone();
           for ((k,v) <- e1) this.env(k) = v;
         }
         case CtrlBlk() => {
-          var e:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          //var e:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
+          var e:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
           var bl:ArrayBuffer[Int] = this.value_stack.pop().asInstanceOf[ArrayBuffer[Int]]
 
           this.env = e;
@@ -156,7 +213,7 @@ class PiAutomata(input:Statement) {
     println()
   }
 
-  def printEnv(env: HashMap[String,Int]): Unit ={
+  def printEnv(env: HashMap[String,Bindable]): Unit ={
     print("Environment: ")
     if (env.isEmpty) {println("Empty"); return}
     for ((k,v) <- env) printf("{%s, %s} ", k, v)

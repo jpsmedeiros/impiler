@@ -38,6 +38,7 @@ trait Statement extends ImpType
 
 trait Bindable extends ImpType
 trait Exp extends Statement with Bindable
+case class Location(l: Int) extends Bindable
 
 //case class AId(v:String) extends AExp
 //case class BId(v:String) extends BExp
