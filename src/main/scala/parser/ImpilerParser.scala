@@ -62,6 +62,14 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def Bind: Rule1[types.Dec] = rule {
+    BindVal | BindVar
+  }
+
+  def BindVal: Rule1[types.Dec] = rule {
+    "val" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), y)}
+  }
+
+  def BindVar: Rule1[types.Dec] = rule {
     "var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 

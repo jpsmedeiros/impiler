@@ -167,8 +167,13 @@ class ParserTest extends FunSuite {
 
   test ("Leitura de Arquivo: Dangling pointer"){
     var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/dpoint.txt"))
-    var expected = Blk(DSeq(Bind(Id("x"),Ref(Num(0.0))),Bind(Id("val"),Ref(Num(0.0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(false))),CSeq(Assign(Id("y"),Bool(true)),Assign(Id("x"),DeRef(Id("y"))))),Assign(Id("val"),ValRef(Id("x")))))
+    var expected = Blk(DSeq(Bind(Id("x"),Ref(Num(0.0))),Bind(Id("w"),Ref(Num(0.0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(false))),CSeq(Assign(Id("y"),Bool(true)),Assign(Id("x"),DeRef(Id("y"))))),Assign(Id("w"),ValRef(Id("x")))))
     assert(result === expected)
+  }
+
+  test("Bind: Constantes e Variáveis"){
+    var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/constante.txt"))
+    var expected = Blk(DSeq(Bind(Id("z"),Ref(Num(1.0))),Bind(Id("x"),Num(8.0))),Assign(Id("z"),Mul(Id("z"),Id("x"))))
   }
 
 }
