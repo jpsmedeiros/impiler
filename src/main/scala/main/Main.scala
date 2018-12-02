@@ -14,6 +14,7 @@ object Main extends App {
   aut.solve()
   aut.printAut()
   */
+
   if(args.length > 0) {
     println("File: " + args(0))
     var parse_result = parse_input(readInput(args(0)))
