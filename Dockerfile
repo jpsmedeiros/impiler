@@ -30,7 +30,7 @@ RUN \
   apt-get install sbt && \
   sbt sbtVersion
   
-CMD sbt run
+CMD sbt "run src/tests/testFiles/fatorial.txt"
 
 # Define working directory
 WORKDIR /root

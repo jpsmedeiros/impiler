@@ -61,21 +61,17 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     Cmd
   }
 
-
-
-  def DecTerm = rule {
-    Declaration
-  }
-
-  def Declaration: Rule1[types.Dec] = rule {
-    "let var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
+  def Bind: Rule1[types.Dec] = rule {
+    "var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
   def DSeq: Rule1[types.DSeq] = rule {
-    DecTerm ~ WS ~ Dec ~> types.DSeq
+    Bind ~ WS ~ DTerm ~> types.DSeq
   }
 
-  def Dec = rule { DSeq | DecTerm }
+  def Dec = rule { "let" ~ DTerm }
+
+  def DTerm = rule { DSeq | Bind }
 
   def Loop: Rule1[types.Loop] = rule { ("while" ~ WS ~ BExp ~ WS  ~ "do" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}"
     ~> {(cond: types.BExp, cmd: types.Cmd) => types.Loop(cond, cmd)}) }
