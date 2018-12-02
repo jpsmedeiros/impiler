@@ -1,5 +1,5 @@
 let var x := 0
-let var val := 0
+var val := 0
     in {
         let var y := false
         in {
