@@ -176,4 +176,9 @@ class ParserTest extends FunSuite {
     var expected = Blk(DSeq(Bind(Id("z"),Ref(Num(1.0))),Bind(Id("x"),Num(8.0))),Assign(Id("z"),Mul(Id("z"),Id("x"))))
   }
 
+  test("Funções: Fatorial" ){
+    var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/fn - fatorial.txt"))
+    var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(BindAbs(Id("f"),Abs(Id("x"),Blk(Bind(Id("y"),Ref(Id("x"))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))),Call(Id("f"),Num(10.0))))
+  }
+
 }

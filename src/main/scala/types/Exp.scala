@@ -72,7 +72,10 @@ case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
+case class Call(id:Id, exp: Exp) extends Cmd
 
 trait Dec extends Statement
 case class Bind(id: Id, e:Exp) extends Dec
+case class BindAbs(id: Id, abs: Abs) extends Dec
+case class Abs(id: Id, cmd: Cmd)
 case class DSeq(r:Dec, l:Dec) extends Dec
