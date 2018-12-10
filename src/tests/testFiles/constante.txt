@@ -1,0 +1,5 @@
+let var z := 1
+val x := 8
+    in {
+    z := z * x
+    }

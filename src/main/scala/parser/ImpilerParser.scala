@@ -62,6 +62,14 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   }
 
   def Bind: Rule1[types.Dec] = rule {
+    BindVal | BindVar
+  }
+
+  def BindVal: Rule1[types.Dec] = rule {
+    "val" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), y)}
+  }
+
+  def BindVar: Rule1[types.Dec] = rule {
     "var" ~ Identifier ~ ":=" ~ Exp ~> { (x: String, y: types.Exp) => types.Bind(types.Id(x), types.Ref(y))}
   }
 
@@ -69,7 +77,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
     Bind ~ WS ~ DTerm ~> types.DSeq
   }
 
-  def Dec = rule { "let" ~ DTerm }
+  def Dec= rule { "let" ~ DTerm }
 
   def DTerm = rule { DSeq | Bind }
 
@@ -90,11 +98,17 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def DeRefSymbol = rule { WS ~ '&' ~ WS }
 
-  def Blk: Rule1[types.Blk] = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
+  def Blk: Rule1[types.Blk] = rule { DecBlk | FnBlk }
+
+  def DecBlk = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
+
+  def FnBlk = rule { "let fn" ~ WS ~ Identifier ~ "(" ~ Identifier ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: String, id2: String, dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(types.Id(id1), types.Abs(types.Id(id2), types.Blk(dec, cmd1))), cmd2)}}
+
+  def Call = rule { "in" ~ WS ~ Identifier ~ "(" ~ Exp ~ ")" ~> {(x: String, exp: types.Exp) => types.Call(types.Id(x), exp)}}
 
   def Cmd = rule { CSeq | CmdTerm }
 
-  def CmdTerm = rule { Loop | Blk | Assign | ValRefAssign | DeRefAssign }
+  def CmdTerm = rule { Blk | Loop | Assign | ValRefAssign | DeRefAssign | Call }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp

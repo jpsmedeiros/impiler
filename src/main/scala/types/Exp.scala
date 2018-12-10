@@ -36,8 +36,10 @@ case class CtrlBlk() extends CtrlType
 
 trait Statement extends ImpType
 
-trait Bindable extends ImpType
-trait Exp extends Statement with Bindable
+trait Bindable extends Statement
+//trait Bindable extends ImpType
+//trait Exp extends Statement with Bindable
+trait Exp extends Bindable
 case class Location(l: Int) extends Bindable
 
 //case class AId(v:String) extends AExp
@@ -66,7 +68,6 @@ case class Ref(e: Exp) extends Exp
 case class DeRef(id: Id) extends Exp
 case class ValRef(id: Id) extends Exp
 
-
 trait Cmd extends Statement
 case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
@@ -77,9 +78,10 @@ case class Call(id: Id, actuals: Actuals) extends Cmd
 trait Dec extends Statement
 //case class Bind(id: Id, e:Exp) extends Dec
 case class Bind(id: Id, e: Bindable) extends Dec
+case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
 
-case class Abs(blk: Blk) extends Bindable
+case class Abs(f: Formals, b: Blk) extends Bindable
 case class Formals(id_list: ArrayBuffer[Id])
 case class Actuals(exp_list: ArrayBuffer[Exp])
 
