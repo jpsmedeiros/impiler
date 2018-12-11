@@ -100,7 +100,12 @@ class PiAutomata(input:Statement) {
 
         //Decs
         case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id.v}
+        case BindAbs(id, abs) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= abs; this.value_stack+= id.v}
+
         case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
+
+        //Abstractions
+        case Abs(f,b) => { val c:Closure = Closure(f,b,this.env); this.value_stack+= c; }
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}

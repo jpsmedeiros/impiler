@@ -93,4 +93,4 @@ case class ASeq(a1: Actuals, a2: Actuals) extends Actuals
 //case class Actuals(exp_list: ArrayBuffer[Exp])
 
 //case class Closure(f: Formals, b: Blk, e: HashMap[String,Int])
-case class Closure(f: Formals, b: Blk, e: HashMap[String,Bindable])
+case class Closure(f: Formals, b: Blk, e: HashMap[String,Bindable]) extends Bindable
