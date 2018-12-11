@@ -87,7 +87,7 @@ case class FSeq(f1: Formals, f2: Formals) extends Formals
 
 trait Actuals
 //case class Actual(exp: Exp) extends Actuals
-case class ASeq(a1: Actuals, a2: Actuals) extends Formals
+case class ASeq(a1: Actuals, a2: Actuals) extends Actuals
 
 //case class Formals(id_list: ArrayBuffer[Id])
 //case class Actuals(exp_list: ArrayBuffer[Exp])
