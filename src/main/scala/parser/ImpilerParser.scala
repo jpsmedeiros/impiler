@@ -1,3 +1,4 @@
+/*
 package parser
 
 import org.parboiled2._
@@ -172,3 +173,5 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def Bool = rule { (atomic("true") ~> {() => types.Bool(true)}) | (atomic("false") ~> {() => types.Bool(false)} ) }
 
 }
+
+*/

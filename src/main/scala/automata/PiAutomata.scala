@@ -43,7 +43,10 @@ class PiAutomata(input:Statement) {
           var aux: Bindable = this.env(v)
           aux match{
             case Location(l) => this.value_stack+= this.mem(l)
-            case _ => this.value_stack+= aux
+            //case _ => this.value_stack+= aux
+            case Num(v) => this.value_stack+= v
+            case Bool(v) => this.value_stack+= v
+            case _ => println("Error: Improper type in Enviroment")
           }
 
           //this.value_stack+= this.mem(this.env(v))
@@ -154,7 +157,7 @@ class PiAutomata(input:Statement) {
               //case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
               case t: HashMap[String, Bindable] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
               //case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Bindable] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
+              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Bindable] = new HashMap(); val n:Num = Num(v1.asInstanceOf[Double]) ;t(v0.asInstanceOf[String]) = n; this.value_stack+= t;
             }
           }
           else{

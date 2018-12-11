@@ -42,8 +42,6 @@ trait Bindable extends Statement
 trait Exp extends Bindable
 case class Location(l: Int) extends Bindable
 
-//case class AId(v:String) extends AExp
-//case class BId(v:String) extends BExp
 case class Id(v:String) extends AExp with BExp
 
 trait AExp extends Exp
@@ -85,4 +83,5 @@ case class Abs(f: Formals, b: Blk) extends Bindable
 case class Formals(id_list: ArrayBuffer[Id])
 case class Actuals(exp_list: ArrayBuffer[Exp])
 
-case class Closure(f: Formals, b: Blk, e: HashMap[String,Int])
+//case class Closure(f: Formals, b: Blk, e: HashMap[String,Int])
+case class Closure(f: Formals, b: Blk, e: HashMap[String,Bindable])
