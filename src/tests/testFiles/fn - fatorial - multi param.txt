@@ -1,0 +1,12 @@
+let var z := 1
+    in {
+        let fn f(x, y, z) =
+            let var y := x
+            in {
+                while !(y < 1) do {
+                    z := z * y
+                    y := y - 1
+                }
+            }
+        in f(10, 3+5, true || false)
+    }
