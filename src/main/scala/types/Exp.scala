@@ -1,6 +1,6 @@
 package types
 
-import scala.collection.mutable.{ArrayBuffer,HashMap}
+import scala.collection.mutable.{HashMap}
 
 
 trait ImpType
@@ -32,6 +32,7 @@ case class CtrlValRef() extends CtrlType
 case class CtrlBind() extends CtrlType
 case class CtrlDec() extends CtrlType
 case class CtrlBlk() extends CtrlType
+case class CtrlCall(id:Id, n:Int) extends CtrlType
 
 
 trait Statement extends ImpType
@@ -71,15 +72,18 @@ case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
-case class Call(id: Id, actuals: Exp*) extends Cmd
+
+//case class Call(id: Id, actuals: Exp*) extends Cmd
+case class Call(id: Id, actuals: Seq[Exp]) extends Cmd
 
 trait Dec extends Statement
 //case class Bind(id: Id, e:Exp) extends Dec
 case class Bind(id: Id, e: Bindable) extends Dec
 case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
+case class Env(e: HashMap[String,Bindable]) extends Dec
 
-//case class Abs(formals: Id*, b: Blk) extends Bindable
-case class Abs(b: Blk, formals: Id*) extends Bindable
-
-case class Closure(b: Blk, e: HashMap[String,Bindable], formals: Id*) extends Bindable
+//case class Abs(b: Blk, formals: Id*) extends Bindable
+case class Abs(f: Seq[Id], b: Blk) extends Bindable
+//case class Closure(b: Blk, e: HashMap[String,Bindable], formals: Id*) extends Bindable
+case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable

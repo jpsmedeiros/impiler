@@ -1,7 +1,7 @@
 package main
 import automata.PiAutomata
-//import parser.ImpilerParser
-//import parser.ImpilerParser.{parse_input, readInput}
+import parser.ImpilerParser
+import parser.ImpilerParser.{parse_input, readInput}
 import types._
 
 import scala.io.StdIn
@@ -11,27 +11,11 @@ object Main extends App {
 
 
   //var dangp:Cmd = Blk(DSeq(Bind(Id("x"),Ref(Num(100))),Bind(Id("val"),Ref(Num(0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(true))),Assign(Id("x"),DeRef(Id("y")))),Assign(Id("val"),ValRef(Id("x")))))
-  /*
-  var const_test = Blk(DSeq(Bind(Id("val100"),Num(100)),Bind(Id("var"),Ref(Num(0)))),Assign(Id("var"),Id("val100")))
-  var aut:PiAutomata = new PiAutomata(const_test)
+  //var const_test = Blk(DSeq(Bind(Id("val100"),Num(100)),Bind(Id("var"),Ref(Num(0)))),Assign(Id("var"),Id("val100")))
+  var teste = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(BindAbs(Id("f"),Abs(Seq(Id("x")),Blk(Bind(Id("y"),Ref(Id("x"))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))),Call(Id("f"),Seq(Num(10.0)))))
+  var aut:PiAutomata = new PiAutomata(teste)
   aut.solve()
   aut.printAut()
-  */
-
-  /*
-  def test(l: Int*): Int={
-    val i: Int = 0;
-    for(i <- 0 until l.length){
-      println(l(i))
-    }
-    return 1
-  }
-  test(2,3,4)
-  */
-
-  var teste: Call = Call(Id("x"),Sum(Num(2),Num(3)))
-  println(teste)
-
 
   /*
   if(args.length > 0) {
@@ -47,5 +31,6 @@ object Main extends App {
     println("O programa precisa de pelo menos 1 argumento para executar")
   }
   */
+
 
 }

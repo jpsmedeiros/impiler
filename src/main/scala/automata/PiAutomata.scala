@@ -98,12 +98,9 @@ class PiAutomata(input:Statement) {
           this.value_stack+= this.block_locks.clone(); this.block_locks = new ArrayBuffer()
         }
 
-
-
         case Call(id, actuals) => {
-          //actuals match{
-          //  case WrappedArray[Exp] =>
-          //}
+          this.ctr_stack += CtrlCall(id, actuals.length)
+          actuals.foreach((e) => {this.ctr_stack += e})
         }
 
         //Decs
@@ -113,8 +110,7 @@ class PiAutomata(input:Statement) {
         case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
 
         //Abstractions
-        case Abs(b,formals) => { val c:Closure = Closure(b,this.env,formals); this.value_stack+= c; }
-
+        case Abs(f,b) => { val c:Closure = Closure(f,b,this.env); this.value_stack+= c; }
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}
@@ -171,7 +167,14 @@ class PiAutomata(input:Statement) {
               //case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
               case t: HashMap[String, Bindable] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
               //case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-              case _ => this.value_stack+= head; val t: mutable.HashMap[String, Bindable] = new HashMap(); val n:Num = Num(v1.asInstanceOf[Double]) ;t(v0.asInstanceOf[String]) = n; this.value_stack+= t;
+              case _ => {
+                this.value_stack+= head;
+                val t: mutable.HashMap[String, Bindable] = new HashMap();
+                //val n:Num = Num(v1.asInstanceOf[Double]);
+                val n = v1.asInstanceOf[Bindable];
+                t(v0.asInstanceOf[String]) = n;
+                this.value_stack+= t;
+              }
             }
           }
           else{
@@ -202,8 +205,46 @@ class PiAutomata(input:Statement) {
             }
           }
         }
+
+        case CtrlCall(id, n) => {
+          val closure = this.env(id.v).asInstanceOf[Closure]
+          if(closure.f.length == n) {
+            //var seq = (0 to n).map(index => Bind(closure.f(index), this.value_stack.pop().asInstanceOf[Exp])).reduce(DSeq(_, _))
+            val seq = (0 to n).map((index) => this.value_stack.pop().asInstanceOf[Bindable])
+
+            var match_result: Dec = null;
+            if(n==1){
+              match_result = Bind(closure.f(0),seq(0))
+            }
+            else{
+              if(n>1){
+                match_result = pimatch(closure.f,seq)
+              }
+            }
+
+            this.ctr_stack+= Blk(match_result, closure.b)
+            this.value_stack += this.env
+            this.env = closure.e
+          }
+          else{ printf("Error: Different number of formals"); System.exit(1) }
+        }
+
       }
     }
+  }
+
+  def pimatch(f: Seq[Id], values: Seq[Bindable]): DSeq ={
+    if(f.length<2){ printf("Error: pimatch with less than two formals"); System.exit(1) }
+
+    var declarations: DSeq = null;
+    val last = f.length - 1
+
+    declarations = DSeq(Bind(f(last - 1),values(last - 1)),Bind(f(last),values(last)))
+    for(i <- (last-2) to 0 by -1){
+      DSeq(Bind(f(i),values(i)),declarations)
+    }
+
+    return declarations
   }
 
   def getResult(): Any ={
