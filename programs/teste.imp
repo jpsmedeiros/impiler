@@ -1,6 +1,6 @@
 let var z := 1
     in {
-        let fn f() =
+        let fn f(x, y, z) =
             let var y := x
             in {
                 while !(y < 1) do {
@@ -8,5 +8,5 @@ let var z := 1
                     y := y - 1
                 }
             }
-        in f()
+        in f(10, 3+5, true || false)
     }

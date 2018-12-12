@@ -1,3 +1,4 @@
+/*
 package automata
 
 import types._
@@ -282,3 +283,4 @@ class PiAutomata(input:Statement) {
   }
 
 }
+*/

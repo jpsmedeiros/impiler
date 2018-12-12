@@ -41,9 +41,11 @@ trait Bindable extends Statement
 //trait Bindable extends ImpType
 //trait Exp extends Statement with Bindable
 trait Exp extends Bindable
+case class ExpSeq(exp1: Exp, exp2: Exp) extends Exp
 case class Location(l: Int) extends Bindable
 
 case class Id(v:String) extends AExp with BExp
+case class IdSeq(id1: Id, id2: Exp) extends Exp
 
 trait AExp extends Exp
 case class Sum(l: AExp, r:AExp) extends AExp
@@ -72,7 +74,7 @@ case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
-case class Call(id: Id, actuals: Seq[Exp]) extends Cmd
+case class Call(id: Id, actuals: Exp) extends Cmd
 
 trait Dec extends Statement
 //case class Bind(id: Id, e:Exp) extends Dec
@@ -80,6 +82,6 @@ case class Bind(id: Id, e: Bindable) extends Dec
 case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
 
-case class Abs(f: Seq[Id], b: Blk) extends Bindable
+case class Abs(f: Exp, b: Blk) extends Bindable
 
 case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable
