@@ -79,7 +79,7 @@ case class Bind(id: Id, e: Bindable) extends Dec
 case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
 
-case class Abs(f: Formals, b: Blk) extends Bindable
+case class Abs(f: Seq[String], b: Blk) extends Bindable
 
 trait Formals
 //case class Formal(id: Id) extends Formals

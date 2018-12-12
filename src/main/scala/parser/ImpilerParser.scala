@@ -1,4 +1,3 @@
-/*
 package parser
 
 import org.parboiled2._
@@ -103,7 +102,7 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def DecBlk = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
 
-  def FnBlk = rule { "let fn" ~ WS ~ Identifier ~ "(" ~ Identifier ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: String, id2: String, dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(types.Id(id1), types.Abs(types.Id(id2), types.Blk(dec, cmd1))), cmd2)}}
+  def FnBlk = rule { "let fn" ~ WS ~ Identifier ~ "(" ~ oneOrMore( Identifier ) ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: String, id2: Seq[String], dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(types.Id(id1), types.Abs(id2, types.Blk(dec, cmd1))), cmd2)}}
 
   def Call = rule { "in" ~ WS ~ Identifier ~ "(" ~ Exp ~ ")" ~> {(x: String, exp: types.Exp) => types.Call(types.Id(x), exp)}}
 
@@ -173,5 +172,3 @@ class ImpilerParser(val input: ParserInput) extends Parser {
   def Bool = rule { (atomic("true") ~> {() => types.Bool(true)}) | (atomic("false") ~> {() => types.Bool(false)} ) }
 
 }
-
-*/
