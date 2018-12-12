@@ -32,6 +32,7 @@ case class CtrlValRef() extends CtrlType
 case class CtrlBind() extends CtrlType
 case class CtrlDec() extends CtrlType
 case class CtrlBlk() extends CtrlType
+case class CtrlCall(id:Id, n:Int) extends CtrlType
 
 
 trait Statement extends ImpType
@@ -39,10 +40,10 @@ trait Statement extends ImpType
 trait Bindable extends Statement
 //trait Bindable extends ImpType
 //trait Exp extends Statement with Bindable
-trait Exp extends Bindable with Actuals
+trait Exp extends Bindable
 case class Location(l: Int) extends Bindable
 
-case class Id(v:String) extends AExp with BExp with Formals
+case class Id(v:String) extends AExp with BExp
 
 trait AExp extends Exp
 case class Sum(l: AExp, r:AExp) extends AExp
@@ -71,7 +72,7 @@ case class Assign(id: Id, e:Exp) extends Cmd
 case class CSeq(r:Cmd, l:Cmd) extends Cmd
 case class Loop(check:BExp, cmd:Cmd) extends Cmd
 case class Blk(dec:Dec, cmd: Cmd) extends Cmd
-case class Call(id: Id, actuals: Actuals) extends Cmd
+case class Call(id: Id, actuals: Seq[Exp]) extends Cmd
 
 trait Dec extends Statement
 //case class Bind(id: Id, e:Exp) extends Dec
@@ -79,18 +80,6 @@ case class Bind(id: Id, e: Bindable) extends Dec
 case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
 
-case class Abs(f: Seq[String], b: Blk) extends Bindable
+case class Abs(f: Seq[Id], b: Blk) extends Bindable
 
-trait Formals
-//case class Formal(id: Id) extends Formals
-case class FSeq(f1: Formals, f2: Formals) extends Formals
-
-trait Actuals
-//case class Actual(exp: Exp) extends Actuals
-case class ASeq(a1: Actuals, a2: Actuals) extends Actuals
-
-//case class Formals(id_list: ArrayBuffer[Id])
-//case class Actuals(exp_list: ArrayBuffer[Exp])
-
-//case class Closure(f: Formals, b: Blk, e: HashMap[String,Int])
-case class Closure(f: Formals, b: Blk, e: HashMap[String,Bindable]) extends Bindable
+case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable

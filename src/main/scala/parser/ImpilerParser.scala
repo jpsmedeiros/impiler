@@ -102,9 +102,11 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def DecBlk = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
 
-  def FnBlk = rule { "let fn" ~ WS ~ Identifier ~ "(" ~ oneOrMore( Identifier ) ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: String, id2: Seq[String], dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(types.Id(id1), types.Abs(id2, types.Blk(dec, cmd1))), cmd2)}}
+  def FnBlk = rule { "let fn" ~ WS ~ Id ~ "(" ~ oneOrMore( Id ) ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: types.Id, id2: Seq[types.Id], dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(id1, types.Abs(id2, types.Blk(dec, cmd1))), cmd2)}}
+  def FnBlk0 = rule { "let fn" ~ WS ~ Id ~ "(" ~ WS ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: types.Id, dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(id1, types.Abs(null, types.Blk(dec, cmd1))), cmd2)}}
 
-  def Call = rule { "in" ~ WS ~ Identifier ~ "(" ~ Exp ~ ")" ~> {(x: String, exp: types.Exp) => types.Call(types.Id(x), exp)}}
+  def Call = rule { "in" ~ WS ~ Id ~ "(" ~ oneOrMore(Exp) ~ ")" ~> types.Call }
+  def Call0 = rule { "in" ~ WS ~ Id ~ "(" ~ WS ~ ")" ~> { (id:types.Id) => types.Call(id, null) } }
 
   def Cmd = rule { CSeq | CmdTerm }
 

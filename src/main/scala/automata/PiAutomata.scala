@@ -97,7 +97,10 @@ class PiAutomata(input:Statement) {
           this.ctr_stack+= CtrlBlk(); this.ctr_stack+= cmd; this.ctr_stack+= CtrlDec(); this.ctr_stack+= dec;
           this.value_stack+= this.block_locks.clone(); this.block_locks = new ArrayBuffer()
         }
-
+        case Call(id, actuals) => {
+          this.ctr_stack += CtrlCall(id, actuals.length)
+          actuals.foreach((e) => {this.ctr_stack += e})
+        }
         //Decs
         case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id.v}
         case BindAbs(id, abs) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= abs; this.value_stack+= id.v}
@@ -191,6 +194,16 @@ class PiAutomata(input:Statement) {
               //this.mem(aux(i)) = null
               this.mem -= aux(i)
             }
+          }
+        }
+        case CtrlCall(id, n) => {
+          var closure = this.env(id.v).asInstanceOf[Closure]
+          if(closure.f.length == n) {
+            //var seq = (0 to n).map(index => Bind(closure.f(index), this.value_stack.pop().asInstanceOf[Exp])).reduce(DSeq(_, _))
+            var seq = (0 to n).map((index) => this.value_stack.pop().asInstanceOf[Double])
+            this.ctr_stack+= Blk(pimatch(closure.f, seq), closure.b)
+            this.value_stack += this.env
+            this.env = closure.e
           }
         }
       }
