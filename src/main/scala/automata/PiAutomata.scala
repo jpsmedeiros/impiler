@@ -3,7 +3,7 @@ package automata
 import types._
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ArrayStack, HashMap}
+import scala.collection.mutable.{ArrayBuffer, ArrayStack, HashMap, WrappedArray}
 
 class PiAutomata(input:Statement) {
 
@@ -98,6 +98,14 @@ class PiAutomata(input:Statement) {
           this.value_stack+= this.block_locks.clone(); this.block_locks = new ArrayBuffer()
         }
 
+
+
+        case Call(id, actuals) => {
+          //actuals match{
+          //  case WrappedArray[Exp] =>
+          //}
+        }
+
         //Decs
         case Bind(id,e) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= e; this.value_stack+= id.v}
         case BindAbs(id, abs) => {this.ctr_stack+=CtrlBind(); this.ctr_stack+= abs; this.value_stack+= id.v}
@@ -105,7 +113,8 @@ class PiAutomata(input:Statement) {
         case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
 
         //Abstractions
-        case Abs(f,b) => { val c:Closure = Closure(f,b,this.env); this.value_stack+= c; }
+        case Abs(b,formals) => { val c:Closure = Closure(b,this.env,formals); this.value_stack+= c; }
+
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}

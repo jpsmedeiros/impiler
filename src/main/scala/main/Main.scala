@@ -11,10 +11,26 @@ object Main extends App {
 
 
   //var dangp:Cmd = Blk(DSeq(Bind(Id("x"),Ref(Num(100))),Bind(Id("val"),Ref(Num(0)))),CSeq(Blk(Bind(Id("y"),Ref(Bool(true))),Assign(Id("x"),DeRef(Id("y")))),Assign(Id("val"),ValRef(Id("x")))))
+  /*
   var const_test = Blk(DSeq(Bind(Id("val100"),Num(100)),Bind(Id("var"),Ref(Num(0)))),Assign(Id("var"),Id("val100")))
   var aut:PiAutomata = new PiAutomata(const_test)
   aut.solve()
   aut.printAut()
+  */
+
+  /*
+  def test(l: Int*): Int={
+    val i: Int = 0;
+    for(i <- 0 until l.length){
+      println(l(i))
+    }
+    return 1
+  }
+  test(2,3,4)
+  */
+
+  var teste: Call = Call(Id("x"),Sum(Num(2),Num(3)))
+  println(teste)
 
 
   /*
