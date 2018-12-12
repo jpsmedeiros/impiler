@@ -196,6 +196,7 @@ class PiAutomata(input:Statement) {
             }
           }
         }
+          /*
         case CtrlCall(id, n) => {
           var closure = this.env(id.v).asInstanceOf[Closure]
           if(closure.f.length == n) {
@@ -206,6 +207,7 @@ class PiAutomata(input:Statement) {
             this.env = closure.e
           }
         }
+          */
       }
     }
   }
