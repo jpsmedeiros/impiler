@@ -7,10 +7,10 @@ import scala.collection.mutable.{ArrayBuffer, ArrayStack, HashMap, WrappedArray}
 
 class PiAutomata(input:Statement) {
 
-  var ctr_stack: ArrayStack[ImpType] = new ArrayStack()
+  var ctr_stack: ArrayStack[Any] = new ArrayStack()
   var value_stack: ArrayStack[Any] = new ArrayStack()
   //var env: HashMap[String,Int] = new HashMap()
-  var env: HashMap[String,Bindable] = new HashMap()
+  var env: HashMap[String,Any] = new HashMap()
   var mem: HashMap[Int, Any] = new HashMap()
   var block_locks: ArrayBuffer[Int] = new ArrayBuffer()
   var next_index: Int = 0
@@ -19,7 +19,8 @@ class PiAutomata(input:Statement) {
     this.ctr_stack+=(this.input)
     while (this.ctr_stack.nonEmpty) {
       this.printAut()
-      val top:ImpType = this.ctr_stack.pop()
+      //val top:ImpType = this.ctr_stack.pop()
+      val top = this.ctr_stack.pop()
       top match {
         // AExp
         case Sum(l, r) => {this.ctr_stack+=CtrlSum(); this.ctr_stack+= r; this.ctr_stack+=l}
@@ -40,13 +41,15 @@ class PiAutomata(input:Statement) {
         case Ge(l, r) => {this.ctr_stack+=CtrlGe(); this.ctr_stack += l; this.ctr_stack += r;}
 
         case Id(v) => {
-          var aux: Bindable = this.env(v)
+          var aux = this.env(v)
           aux match{
             case Location(l) => this.value_stack+= this.mem(l)
-            //case _ => this.value_stack+= aux
-            case Num(v) => this.value_stack+= v
-            case Bool(v) => this.value_stack+= v
-            case _ => println("Error: Improper type in Enviroment")
+            //case Num(v) => this.ctr_stack+= v
+            //case Bool(v) => this.ctr_stack+= v
+            case d: Double => this.value_stack+= d
+            case b: Boolean => this.value_stack+= b
+            case c: Closure => this.value_stack+= c
+            case _ => {println("Error: Improper type in Environment"); System.exit(1) }
           }
 
           //this.value_stack+= this.mem(this.env(v))
@@ -165,32 +168,33 @@ class PiAutomata(input:Statement) {
             val head = this.value_stack.pop()
             head match {
               //case t: HashMap[String, Int] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-              case t: HashMap[String, Bindable] => t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
+              case t: HashMap[String, Any] => t(v0.asInstanceOf[String]) = v1; this.value_stack+= t;
               //case _ => this.value_stack+= head; val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
               case _ => {
                 this.value_stack+= head;
-                val t: mutable.HashMap[String, Bindable] = new HashMap();
+                val t: mutable.HashMap[String, Any] = new HashMap();
                 //val n:Num = Num(v1.asInstanceOf[Double]);
-                val n = v1.asInstanceOf[Bindable];
-                t(v0.asInstanceOf[String]) = n;
+                t(v0.asInstanceOf[String]) = v1;
                 this.value_stack+= t;
               }
             }
           }
           else{
             //val t: mutable.HashMap[String, Int] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Int]; this.value_stack+= t;
-            val t: mutable.HashMap[String, Bindable] = new HashMap(); t(v0.asInstanceOf[String]) = v1.asInstanceOf[Bindable]; this.value_stack+= t;
+            val t: mutable.HashMap[String, Any] = new HashMap(); t(v0.asInstanceOf[String]) = v1; this.value_stack+= t;
           }
         }
         case CtrlDec() => {
           //var e1:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
-          var e1:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
+          //var e1:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
+          var e1:mutable.HashMap[String,Any] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Any]];
           this.value_stack+= this.env.clone();
           for ((k,v) <- e1) this.env(k) = v;
         }
         case CtrlBlk() => {
           //var e:mutable.HashMap[String,Int] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Int]];
-          var e:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
+          //var e:mutable.HashMap[String,Bindable] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Bindable]];
+          var e:mutable.HashMap[String,Any] = this.value_stack.pop().asInstanceOf[mutable.HashMap[String,Any]];
           var bl:ArrayBuffer[Int] = this.value_stack.pop().asInstanceOf[ArrayBuffer[Int]]
 
           this.env = e;
@@ -210,15 +214,17 @@ class PiAutomata(input:Statement) {
           val closure = this.env(id.v).asInstanceOf[Closure]
           if(closure.f.length == n) {
             //var seq = (0 to n).map(index => Bind(closure.f(index), this.value_stack.pop().asInstanceOf[Exp])).reduce(DSeq(_, _))
-            val seq = (0 to n).map((index) => this.value_stack.pop().asInstanceOf[Bindable])
+            //val seq = (0 to n).map((index) => this.value_stack.pop().isInstanceOf[Bindable])
+            val seq = (0 to n).map((index) => this.value_stack.pop())
 
             var match_result: Dec = null;
             if(n==1){
+              //match_result = Bind(closure.f(0),seq(0).asInstanceOf[Bindable])
               match_result = Bind(closure.f(0),seq(0))
             }
             else{
               if(n>1){
-                match_result = pimatch(closure.f,seq)
+                //match_result = pimatch(closure.f,seq)
               }
             }
 
@@ -228,6 +234,8 @@ class PiAutomata(input:Statement) {
           }
           else{ printf("Error: Different number of formals"); System.exit(1) }
         }
+
+        case _ => {printf("Error: Invalid token in ControlStack"); System.exit(1) }
 
       }
     }
@@ -251,7 +259,8 @@ class PiAutomata(input:Statement) {
     return this.value_stack.head
   }
 
-  def printCtrlStack(stack: ArrayStack[ImpType]): Unit ={
+  //def printCtrlStack(stack: ArrayStack[ImpType]): Unit ={
+  def printCtrlStack(stack: ArrayStack[Any]): Unit ={
     var l = stack.size
     print("CtrlStack: ")
     if(l==0) {println("Empty"); return }
@@ -271,7 +280,8 @@ class PiAutomata(input:Statement) {
     println()
   }
 
-  def printEnv(env: HashMap[String,Bindable]): Unit ={
+  //def printEnv(env: HashMap[String,Bindable]): Unit ={
+  def printEnv(env: HashMap[String,Any]): Unit ={
     print("Environment: ")
     if (env.isEmpty) {println("Empty"); return}
     for ((k,v) <- env) printf("{%s, %s} ", k, v)

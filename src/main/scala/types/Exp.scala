@@ -78,12 +78,14 @@ case class Call(id: Id, actuals: Seq[Exp]) extends Cmd
 
 trait Dec extends Statement
 //case class Bind(id: Id, e:Exp) extends Dec
-case class Bind(id: Id, e: Bindable) extends Dec
+case class Bind(id: Id, e: Any) extends Dec
+
 case class BindAbs(id: Id, abs: Abs) extends Dec
 case class DSeq(r:Dec, l:Dec) extends Dec
-case class Env(e: HashMap[String,Bindable]) extends Dec
+//case class Env(e: HashMap[String,Bindable]) extends Dec
 
 //case class Abs(b: Blk, formals: Id*) extends Bindable
 case class Abs(f: Seq[Id], b: Blk) extends Bindable
 //case class Closure(b: Blk, e: HashMap[String,Bindable], formals: Id*) extends Bindable
-case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable
+//case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable
+case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Any]) extends Bindable
