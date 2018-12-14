@@ -97,8 +97,17 @@ class PiAutomata(input:Statement) {
         case CSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+=l}
         case Loop(check, cmd) => {this.ctr_stack+=CtrlLoop(); this.value_stack+= Loop(check, cmd); this.ctr_stack+= check}
         case Blk(dec, cmd) => {
-          this.ctr_stack+= CtrlBlk(); this.ctr_stack+= cmd; this.ctr_stack+= CtrlDec(); this.ctr_stack+= dec;
-          this.value_stack+= this.block_locks.clone(); this.block_locks = new ArrayBuffer()
+          this.ctr_stack+= CtrlBlk();
+          this.ctr_stack+= cmd;
+
+          if(dec != null){
+            this.ctr_stack+= CtrlDec();
+            this.ctr_stack+= dec;
+
+          }
+
+          this.value_stack+= this.block_locks.clone();
+          this.block_locks = new ArrayBuffer()
         }
 
         case Call(id, actuals) => {
@@ -218,20 +227,10 @@ class PiAutomata(input:Statement) {
 
             val seq = (0 to n).map((index) => this.value_stack.pop())
 
-            var match_result: Dec = null;
-            if(n==1){
-              //match_result = Bind(closure.f(0),seq(0).asInstanceOf[Bindable])
-              match_result = Bind(closure.f(0),seq(0))
-            }
-            else{
-              if(n>1){
-                //match_result = pimatch(closure.f,seq)
-              }
-            }
-
-            this.ctr_stack+= Blk(match_result, closure.b)
+            this.ctr_stack+= Blk(null, closure.b)
             this.value_stack += this.env
-            this.env = closure.e
+            //this.env = closure.e
+            this.env = pimatch(closure.f,seq,closure.e.clone())
           }
           else{ printf("Error: Different number of formals"); System.exit(1) }
         }
@@ -242,18 +241,13 @@ class PiAutomata(input:Statement) {
     }
   }
 
-  def pimatch(f: Seq[Id], values: Seq[Bindable]): DSeq ={
-    if(f.length<2){ printf("Error: pimatch with less than two formals"); System.exit(1) }
+  def pimatch(f: Seq[Id], values: Seq[Any], e: HashMap[String,Any]): HashMap[String,Any] ={
 
-    var declarations: DSeq = null;
-    val last = f.length - 1
-
-    declarations = DSeq(Bind(f(last - 1),values(last - 1)),Bind(f(last),values(last)))
-    for(i <- (last-2) to 0 by -1){
-      DSeq(Bind(f(i),values(i)),declarations)
+    for(i <- 0 to f.length-1){
+      e(f(i).v) = values(i)
     }
 
-    return declarations
+    return e
   }
 
   def getResult(): Any ={
