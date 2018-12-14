@@ -88,4 +88,8 @@ case class DSeq(r:Dec, l:Dec) extends Dec
 case class Abs(f: Seq[Id], b: Blk) extends Bindable
 //case class Closure(b: Blk, e: HashMap[String,Bindable], formals: Id*) extends Bindable
 //case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Bindable]) extends Bindable
-case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Any]) extends Bindable
+case class Closure(f: Seq[Id], b: Blk, e: HashMap[String,Any]) extends Bindable {
+  override def toString = {
+    s"Closure()"
+  }
+}
