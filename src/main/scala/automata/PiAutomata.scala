@@ -215,6 +215,7 @@ class PiAutomata(input:Statement) {
           if(closure.f.length == n) {
             //var seq = (0 to n).map(index => Bind(closure.f(index), this.value_stack.pop().asInstanceOf[Exp])).reduce(DSeq(_, _))
             //val seq = (0 to n).map((index) => this.value_stack.pop().isInstanceOf[Bindable])
+
             val seq = (0 to n).map((index) => this.value_stack.pop())
 
             var match_result: Dec = null;
@@ -319,8 +320,8 @@ class PiAutomata(input:Statement) {
 
   def printAut(): Unit ={
     printCtrlStack(this.ctr_stack)
-    printValueStack(this.value_stack)
-    printEnv(this.env)
+    //printValueStack(this.value_stack)
+    //printEnv(this.env)
     printMem(this.mem)
     printBlockLocs(this.block_locks)
     println()
