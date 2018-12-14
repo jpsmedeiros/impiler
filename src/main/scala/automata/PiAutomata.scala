@@ -122,7 +122,7 @@ class PiAutomata(input:Statement) {
         case DSeq(l, r) => {this.ctr_stack+= r; this.ctr_stack+= l;}
 
         //Abstractions
-        case Abs(f,b) => { val c:Closure = Closure(f,b,this.env); this.value_stack+= c; }
+        case Abs(f,b) => { val c:Closure = Closure(f,b,this.env.clone()); this.value_stack+= c; }
 
         // Controles
         case CtrlSum() => { val v0 = value_stack.pop(); val v1 = value_stack.pop(); value_stack+= (v1.asInstanceOf[Double]+ v0.asInstanceOf[Double])}
