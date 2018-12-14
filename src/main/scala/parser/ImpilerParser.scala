@@ -98,12 +98,12 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
   def DeRefSymbol = rule { WS ~ '&' ~ WS }
 
-  def Blk: Rule1[types.Blk] = rule { DecBlk | FnBlk }
+  def Blk: Rule1[types.Blk] = rule { DecBlk | FnBlk | FnBlk0 }
 
   def DecBlk = rule { Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~> types.Blk }
 
   def FnBlk = rule { "let fn" ~ WS ~ Id ~ "(" ~ (IdFn | IdFn1) ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: types.Id, id2: Seq[types.Id], dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(id1, types.Abs(id2, types.Blk(dec, cmd1))), cmd2)}}
-  def FnBlk0 = rule { "let fn" ~ WS ~ Id ~ "(" ~ WS ~ ")" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: types.Id, dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(id1, types.Abs(null, types.Blk(dec, cmd1))), cmd2)}}
+  def FnBlk0 = rule { "let fn" ~ WS ~ Id ~ "()" ~ WS ~ "= " ~ WS ~ Dec ~ WS ~ "in" ~ WS ~ "{" ~ WS ~ Cmd ~ WS ~ "}" ~ Cmd ~> {(id1: types.Id, dec: types.Dec, cmd1: types.Cmd, cmd2: types.Cmd) => types.Blk(types.BindAbs(id1, types.Abs(null, types.Blk(dec, cmd1))), cmd2)}}
 
   def IdFn1 = rule { Id ~> {(id: types.Id) => Seq(id)} }
   def IdFn = rule { Id ~ oneOrMore(NextId) ~> {(id1: types.Id, id2: Seq[types.Id]) => Seq(id1) ++ id2} }
@@ -111,14 +111,14 @@ class ImpilerParser(val input: ParserInput) extends Parser {
 
 
   def Call = rule { "in" ~ WS ~ Id ~ "(" ~ (ExpFn | ExpFn1) ~ ")" ~> {(id: types.Id, exp: Seq[types.Exp]) => types.Call(id, exp)}}
-  def Call0 = rule { "in" ~ WS ~ Id ~ "(" ~ WS ~ ")" ~> { (id:types.Id) => types.Call(id, null) } }
+  def Call0 = rule { "in" ~ WS ~ Id ~ "()" ~> { (id:types.Id) => types.Call(id, null) } }
   def ExpFn1 = rule { Exp ~> {(Exp: types.Exp) => Seq(Exp)} }
   def ExpFn = rule { Exp ~ oneOrMore(NextExp) ~> {(Exp1: types.Exp, Exp2: Seq[types.Exp]) => Seq(Exp1) ++ Exp2} }
   def NextExp = rule { "," ~ WS ~ Exp ~> {(Exp: types.Exp) => Exp }}
 
   def Cmd = rule { CSeq | CmdTerm }
 
-  def CmdTerm = rule { Blk | Loop | Assign | ValRefAssign | DeRefAssign | Call }
+  def CmdTerm = rule { Blk | Loop | Assign | ValRefAssign | DeRefAssign | Call | Call0 }
 
   def Exp: Rule1[types.Exp] = rule {
     BExp | AExp

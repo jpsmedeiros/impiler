@@ -174,11 +174,25 @@ class ParserTest extends FunSuite {
   test("Bind: Constantes e Variáveis"){
     var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/constante.txt"))
     var expected = Blk(DSeq(Bind(Id("z"),Ref(Num(1.0))),Bind(Id("x"),Num(8.0))),Assign(Id("z"),Mul(Id("z"),Id("x"))))
+    assert(result === expected)
   }
 
   test("Funções: Fatorial" ){
     var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/fn - fatorial.txt"))
     var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(BindAbs(Id("f"),Abs(Seq(Id("x")),Blk(Bind(Id("y"),Ref(Id("x"))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))),Call(Id("f"),Seq(Num(10.0)))))
+    assert(result === expected)
+  }
+
+  test("Funções: Fatorial Multi Parâmetros" ){
+    var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/fn - fatorial - multi param.txt"))
+    var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(BindAbs(Id("f"),Abs(Seq(Id("x"), Id("y"), Id("z")),Blk(Bind(Id("y"),Ref(Id("x"))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))),Call(Id("f"),Seq(Num(10.0), Sum(Num(3), Num(5)), Or(Bool(true), Bool(false))))))
+    assert(result === expected)
+  }
+
+  test("Funções: Sem Parâmetros" ){
+    var result = ImpilerParser.parse_input(ImpilerParser.readFileInput("src/tests/testFiles/fn - sem param.txt"))
+    var expected = Blk(Bind(Id("z"),Ref(Num(1.0))),Blk(BindAbs(Id("f"),Abs(null,Blk(Bind(Id("y"),Ref(Id("x"))),Loop(Not(Lt(Id("y"),Num(1.0))),CSeq(Assign(Id("z"),Mul(Id("z"),Id("y"))),Assign(Id("y"),Sub(Id("y"),Num(1.0)))))))),Call(Id("f"),null)))
+    assert(result === expected)
   }
 
 }
