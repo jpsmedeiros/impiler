@@ -19,6 +19,20 @@ object ImpilerParser {
     return null
   }
 
+  def readInputFromUser(): String = {
+    print("-----------\nLer arquivo? (s/n)\n ")
+    Console.out.flush()
+    var resposta = StdIn.readLine()
+    if (resposta.equals("s") || resposta.equals("S")) {
+      print("-----------\nDigite o nome do arquivo:\n")
+      print("Ex: programs/teste.imp\n ")
+      var nomeArquivo = StdIn.readLine()
+      return readFileInput(nomeArquivo)
+    } else {
+      return readTextInput()
+    }
+  }
+
   def readInput(nomeArquivo: String): String = {
     return readFileInput(nomeArquivo)
   }

@@ -1,7 +1,7 @@
 package main
 import automata.PiAutomata
 import parser.ImpilerParser
-import parser.ImpilerParser.{parse_input, readInput}
+import parser.ImpilerParser.{parse_input, readInput, readInputFromUser}
 import types._
 
 import scala.io.StdIn
@@ -19,18 +19,41 @@ object Main extends App {
   aut.printAut()
   */
 
-
-  if(args.length > 0) {
-    println("File: " + args(0))
-    var parse_result = parse_input(readInput(args(0)))
-    if(parse_result != null){
-      println("PI-LIB: " + parse_result)
-      var aut:PiAutomata = new PiAutomata(parse_result)
-      aut.solve()
-      aut.printAut()
+  var loop = true
+  var firstRun = true
+  while(loop) {
+    if (args.length > 0 && firstRun) {
+      println("File: " + args(0))
+      var parse_result = parse_input(readInput(args(0)))
+      if (parse_result != null) {
+        println("PI-LIB: " + parse_result)
+        var aut: PiAutomata = new PiAutomata(parse_result)
+        aut.solve()
+        aut.printAut()
+        firstRun = false
+      }
+    } else {
+      var parse_result = parse_input(readInputFromUser())
+      if(parse_result != null) {
+        println("PI-LIB: " + parse_result)
+        var aut: PiAutomata = new PiAutomata(parse_result)
+        aut.solve()
+        aut.printAut()
+        firstRun = false
+      }
     }
-  } else {
-    println("O programa precisa de pelo menos 1 argumento para executar")
+    loop = exitInput()
+  }
+
+  def exitInput(): Boolean = {
+    print("-----------\nDeseja sair? (s/n)\n ")
+    Console.out.flush()
+    var resposta = StdIn.readLine()
+    if (resposta.equals("s") || resposta.equals("S")) {
+      return false
+    } else {
+      return true
+    }
   }
 
 
